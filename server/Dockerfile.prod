@@ -25,6 +25,8 @@ COPY . .
 RUN npx prisma generate
 # Build NestJS app
 RUN npm run build
+# Remove devDependencies in the build stage so runner gets only production deps
+RUN npm prune --production --no-audit --no-fund || true
 
 # -------------------------
 # Production runtime
@@ -36,7 +38,6 @@ WORKDIR /app
 # Install only production deps
 # Копируем модули из builder и удаляем dev-зависимости
 COPY --from=builder /app/node_modules ./node_modules
-RUN npm prune --production --no-audit --no-fund || true
 
 # Copy built app and necessary files
 COPY --from=builder /app/dist ./dist
