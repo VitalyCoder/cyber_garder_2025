@@ -1,4 +1,5 @@
-export interface UserProfile {
+export interface User {
+  id?: number; 
   nickname: string;
   monthlyIncome: number;
   monthlySavings: number;
@@ -23,23 +24,55 @@ export const DEFAULT_COOLING_RULES: CoolingRule[] = [
 
 export type ProductStatus = 'COOLING' | 'BLOCKED' | 'READY' | 'BOUGHT' | 'CANCELLED';
 
+export type WishlistStatus = ProductStatus;
 export interface WishlistItem {
   id: string;
   name: string;
   price: number;
   category: string;
   status: ProductStatus;
-  createdAt: string;
   unlockDate?: string;
   aiAdvice?: string;
+  createdAt: string;  
+  excludeFromNotifications: boolean;
 }
 
+
+
 export const CATEGORIES = [
-  "Техника",
-  "Видеоигры",
-  "Косметика",
-  "Еда",
-  "Развлечения",
-  "Одежда",
+  "Электроника и техника", 
+  "Одежда и обувь",
+  "Видеоигры", 
+  "Развлечения", 
+  "Красота", 
+  "Супермаркеты",
+  "Фастфуд",
+  "Рестораны и кафе",
+  "Такси и Транспорт", 
+  "Аптеки",
+  "Дом и ремонт",
+  "Автоуслуги", 
+  "Подарки и Цветы",
+  "Образование", 
+  "Спорттовары",
+  "Подписки и Сервисы", 
   "Другое"
 ];
+
+
+export type ApiCheckStatus = "APPROVED" | "COOLDOWN" | "BLACKLIST";
+
+export const mapApiStatusToProductStatus = (
+  status: ApiCheckStatus
+): ProductStatus => {
+  switch (status) {
+    case "APPROVED":
+      return "READY";
+    case "COOLDOWN":
+      return "COOLING";
+    case "BLACKLIST":
+      return "BLOCKED";
+    default:
+      return "CANCELLED";
+  }
+};

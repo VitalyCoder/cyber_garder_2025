@@ -1,17 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-export type WishlistStatus = 'COOLING' | 'READY' | 'BOUGHT' | 'BLOCKED';
-
-export interface WishlistItem {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  status: WishlistStatus;
-  unlockDate: string;
-  aiAdvice: string;
-}
+import type { WishlistItem, WishlistStatus } from '@/types'; 
 
 interface WishlistState {
   items: WishlistItem[];

@@ -1,10 +1,7 @@
 import { COOLING_RULES } from "@/shared/config/constants";
-import type { UserProfile } from "@/types";
-
-export type ProductCheckStatus = 'COOLING' | 'BLOCKED';
-
+import type { User, ApiCheckStatus } from "@/types"; // Импортируем ApiCheckStatus из ваших типов
 export interface CheckResult {
-  status: ProductCheckStatus;
+  status: ApiCheckStatus; // Используем тип API
   daysToWait: number;
   unlockDate: string;
   aiAdvice: string;
@@ -13,24 +10,21 @@ export interface CheckResult {
 export const calculateCoolingParams = (
   price: number,
   category: string,
-  profile: UserProfile
+  profile: User
 ): CheckResult => {
   const today = new Date();
 
-  //  черный список
   if (profile.blacklistedCategories.includes(category)) {
     return {
-      status: 'BLOCKED',
+      status: 'BLACKLIST',
       daysToWait: 0,
       unlockDate: today.toISOString(),
       aiAdvice: `Категория "${category}" находится в твоем черном списке. Игры — твоя слабость. Сосредоточься на важном.`,
     };
   }
-  // расчет по цене юзера
   let days = 1;
   const rule = COOLING_RULES.find(r => price >= r.min && price < r.max);
   if (rule) days = rule.days;
-// накполения 
   if (profile.useSavings && profile.monthlySavings > 0) {
     const needed = Math.max(0, price - profile.currentSavings);
     const monthsToSave = Math.ceil(needed / profile.monthlySavings);
@@ -38,15 +32,12 @@ export const calculateCoolingParams = (
     days = Math.max(days, daysToSave);
   }
 
-  // изменить на секунды
-
   const unlockDate = new Date();
   unlockDate.setDate(unlockDate.getDate() + days);
 
   const percent = Math.round((price / profile.monthlyIncome) * 100);
-
   return {
-    status: 'COOLING',
+    status: 'COOLDOWN', // Было 'COOLING', стало как в API
     daysToWait: days,
     unlockDate: unlockDate.toISOString(),
     aiAdvice: `Это ${percent}% твоего дохода. Подожди ${days} дн. За это время эмоции улягутся.`,

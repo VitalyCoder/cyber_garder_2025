@@ -3,33 +3,6 @@ import styles from './CheckForm.module.css';
 import { CATEGORIES } from '@/types';
 import { Button } from '@/shared/ui/Button';
 
-//  запрос на сервер с сссылкой виталика  
-// const handleCheck = async (e: React.FormEvent) => {
-//   e.preventDefault();
-  
-//   try {
-//     const response = await fetch('http://localhost:8000/api/check', {
-//       method: 'POST',
-//       headers: { 'Content-Type': 'application/json' },
-//       body: JSON.stringify({
-//         product_name: data.name,
-//         price: Number(data.price),
-//         category: data.category,
-//         user_id: 1 // Или никнейм
-//       })
-//     });
-
-//     // Получаем ответ от ИИ
-//     const result = await response.json(); 
-    
-//     // Переходим
-//     navigate('/result', { state: { result, product: { ... } } });
-
-//   } catch (error) {
-//     alert("Ошибка соединения с сервером");
-//   }
-// };
-
 interface Props {
   onSubmit?: (data: { name: string; price: string; category: string }) => void;
 }
