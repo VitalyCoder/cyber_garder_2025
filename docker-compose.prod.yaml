@@ -25,7 +25,7 @@ services:
         - DATABASE_URL=postgresql://postgres:root@postgres:5432/cyber_garder_2025?schema=public
     restart: always
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - POSTGRES_HOST=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root
@@ -52,7 +52,7 @@ services:
     working_dir: /app
     restart: always
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - VITE_API_BASE_URL=http://server:4200/api
     volumes:
       - ./client:/app:ro
