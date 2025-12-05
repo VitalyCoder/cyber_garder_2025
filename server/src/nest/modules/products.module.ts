@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AiService } from 'src/infrastructure/ai/ai.service';
 import { PrismaModule } from 'src/infrastructure/db/prisma.module';
 import { ProductsController } from 'src/presentation/products/products.controller';
 import { BlacklistService } from 'src/use-cases/blacklist/blacklist.service';
@@ -14,6 +15,7 @@ import { UsersService } from 'src/use-cases/users/users.service';
     UsersService,
     BlacklistService,
     CoolingRangeService,
+    AiService,
   ],
 })
 export class ProductsModule {}

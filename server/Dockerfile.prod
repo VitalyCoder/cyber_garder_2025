@@ -1,54 +1,30 @@
-# Multi-stage Dockerfile for NestJS + Prisma production build
-
-# -------------------------
-# Base image
-# -------------------------
-FROM node:20-alpine AS base
+# Build stage
+FROM node:20-alpine AS build
 WORKDIR /app
 
-# -------------------------
-# Dependencies layer
-# -------------------------
-FROM base AS deps
+# Install deps
 COPY package.json package-lock.json* ./
-# Увеличим устойчивость сетевых запросов npm внутри контейнера
-RUN npm i
+RUN npm ci --only=production || npm ci
 
-# -------------------------
-# Builder layer
-# -------------------------
-FROM deps AS builder
-ARG DATABASE_URL
-ENV DATABASE_URL=${DATABASE_URL}
+# Copy sources
 COPY . .
-# Generate Prisma client before build
-RUN npx prisma generate
-# Build NestJS app
-RUN npm run build
-# Remove devDependencies in the build stage so runner gets only production deps
-RUN npm prune --production --no-audit --no-fund || true
 
-# -------------------------
-# Production runtime
-# -------------------------
-FROM node:20-alpine AS runner
-ENV NODE_ENV=development
+# Build NestJS
+RUN npm run prisma:generate || true \
+ && npm run build
+
+# Runtime stage
+FROM node:20-alpine AS runtime
 WORKDIR /app
 
-# Install only production deps
-# Копируем модули из builder и удаляем dev-зависимости
-COPY --from=builder /app/node_modules ./node_modules
+ENV NODE_ENV=production
 
-# Copy built app and necessary files
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/prisma ./prisma
+# Copy built app
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/node_modules ./node_modules
 
-# Prisma client is already generated in builder and present in node_modules
-
-# Expose app port (compose maps 4200:4200)
-ENV PORT=4200
+# Expose API port
 EXPOSE 4200
 
-# Start the server (NestJS builds to dist/main.js by default)
-CMD ["npm", "start"]
-
+CMD ["node", "dist/src/main.js"]

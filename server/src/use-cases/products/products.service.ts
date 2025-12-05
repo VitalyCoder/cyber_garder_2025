@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { AiService } from 'src/infrastructure/ai/ai.service';
 import { BlacklistService } from 'src/use-cases/blacklist/blacklist.service';
 import { CoolingRangeService } from 'src/use-cases/cooling-range/coolingRange.service';
 import { UsersService } from 'src/use-cases/users/users.service';
@@ -9,6 +10,7 @@ export class ProductsService {
     private readonly users: UsersService,
     private readonly blacklist: BlacklistService,
     private readonly ranges: CoolingRangeService,
+    private readonly ai: AiService,
   ) {}
 
   /**
@@ -29,7 +31,7 @@ export class ProductsService {
   }> {
     const { userId, price, category } = params;
 
-    // 1) Check blacklist direct match (synonymization can be added later)
+    // 1) Check blacklist direct match
     const blocked = await this.blacklist.exists(userId, category);
     if (blocked) {
       return {
@@ -39,6 +41,26 @@ export class ProductsService {
         canAffordNow: false,
         unlockDate: null,
       };
+    }
+
+    // 1.1) AI category similarity against blacklist items (safe fallback on error)
+    try {
+      const blacklistItems = await this.blacklist.list(userId);
+      const aiCat = await this.ai.checkCategorySimilarity(
+        category,
+        blacklistItems.map((b) => b.name),
+      );
+      if (aiCat?.is_blocked && (aiCat?.similarity ?? 0) > 0.7) {
+        return {
+          status: 'BLOCKED',
+          aiReason: aiCat?.reason ?? 'Категория заблокирована (AI)',
+          aiAdvice: null,
+          canAffordNow: false,
+          unlockDate: null,
+        };
+      }
+    } catch {
+      // ignore AI errors
     }
 
     // 2) Cooling period by price range
@@ -77,13 +99,35 @@ export class ProductsService {
     const unlockDate = new Date(
       Date.now() + finalCoolingDays * 24 * 60 * 60 * 1000,
     );
+    // 5) AI purchase advice (safe fallback on error)
+    let aiReason: string | null = null;
+    let aiAdvice: string | null = null;
+    let status: 'APPROVED' | 'COOLING' | 'BLOCKED' = 'COOLING';
+    try {
+      const advice = await this.ai.getPurchaseAdvice({
+        product_name: params.productName,
+        price,
+        user_income: user?.monthlyIncome ?? 0,
+        user_savings: user?.currentSavings ?? 0,
+        monthly_savings: user?.monthlySavings ?? 0,
+        cooling_days: finalCoolingDays,
+      });
+      aiAdvice = advice?.advice ?? null;
+      aiReason = advice?.key_message ?? null;
+      if (advice?.status === 'APPROVED' || advice?.status === 'BLOCKED') {
+        status = advice.status;
+      }
+    } catch {
+      // ignore AI errors
+    }
+
     return {
-      status: 'COOLING',
+      status,
       coolingDays: finalCoolingDays,
       unlockDate,
       canAffordNow,
-      aiReason: null,
-      aiAdvice: null,
+      aiReason,
+      aiAdvice,
     };
   }
 }
