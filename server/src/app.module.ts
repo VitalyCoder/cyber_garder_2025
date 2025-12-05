@@ -6,6 +6,7 @@ import { BlacklistModule } from './nest/modules/blacklist.module';
 import { CoolingRangeModule } from './nest/modules/coolingRange.module';
 import { HistoryModule } from './nest/modules/history.module';
 import { NotificationExcludedProductModule } from './nest/modules/notificationExcludedProduct.module';
+import { ProductsModule } from './nest/modules/products.module';
 import { UsersModule } from './nest/modules/users.module';
 import { UsersSettingsModule } from './nest/modules/usersSettings.module';
 import { WishlistModule } from './nest/modules/wishlist.module';
@@ -21,6 +22,7 @@ import { WishlistModule } from './nest/modules/wishlist.module';
     UsersModule,
     UsersSettingsModule,
     CoolingRangeModule,
+    ProductsModule,
   ],
 })
 export class AppModule {}
