@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum WishlistStatus {
+  waiting
+  ready
+  bought
+  cancelled
+}
+
+enum NotificationFrequency {
+  daily
+  weekly
+  monthly
+}
+
+enum NotificationChannel {
+  browser
+  email
+  telegram
+}
+
+enum HistoryAction {
+  bought
+  cancelled
+  removed
+  postponed
+}
+
+model User {
+  id                    String   @id @default(uuid())
+  nickname              String   @unique
+  monthlyIncome         Int?
+  monthlySavings        Int?
+  currentSavings        Int?
+  useSavingsCalculation Boolean  @default(false)
+  createdAt             DateTime @default(now())
+
+  settings             UserSettings?
+  wishlist             Wishlist[]
+  history              History[]
+  blacklistCategories  BlacklistCategory[]
+  coolingRanges        CoolingRange[]
+  notificationExcluded NotificationExcludedProduct[]
+}
+
+model UserSettings {
+  userId                String                 @id
+  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notificationFrequency NotificationFrequency?
+  notificationChannel   NotificationChannel?
+}
+
+model Wishlist {
+  id                String                        @id @default(uuid())
+  user              User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            String
+  productName       String
+  price             Int
+  category          String
+  coolingPeriodDays Int
+  unlockDate        DateTime?
+  status            WishlistStatus                @default(waiting)
+  aiRecommendation  String?
+  createdAt         DateTime                      @default(now())
+  excludedBy        NotificationExcludedProduct[] @relation("ExcludedProductWishlist")
+
+  @@index([userId, status])
+}
+
+model History {
+  id          String        @id @default(uuid())
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  action      HistoryAction
+  productName String?
+  price       Int?
+  actionDate  DateTime      @default(now())
+}
+
+model BlacklistCategory {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+
+  @@index([userId, name], map: "idx_blacklist_user_name")
+}
+
+model CoolingRange {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  min       Int      @default(0)
+  max       Int?
+  days      Int
+  createdAt DateTime @default(now())
+
+  @@index([userId, min, max], map: "idx_cooling_range_user_min_max")
+}
+
+model NotificationExcludedProduct {
+  id          String    @id @default(uuid())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  productName String
+  wishlist    Wishlist? @relation("ExcludedProductWishlist", fields: [wishlistId], references: [id])
+  wishlistId  String?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId, productName])
+}
