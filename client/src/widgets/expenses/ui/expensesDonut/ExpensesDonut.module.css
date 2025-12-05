@@ -1,0 +1,21 @@
+.container {
+  @apply relative flex flex-col items-center justify-center py-6;
+}
+.centerText {
+  @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none;
+}
+.totalAmount {
+  @apply text-3xl font-bold text-gray-900;
+}
+.label {
+  @apply text-gray-500 text-sm;
+}
+.legend {
+  @apply grid grid-cols-2 gap-3 w-full mt-6 px-4;
+}
+.legendItem {
+  @apply flex items-center gap-2 p-3 bg-gray-50 rounded-xl;
+}
+.dot {
+  @apply w-3 h-3 rounded-full;
+}
