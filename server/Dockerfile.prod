@@ -50,5 +50,5 @@ ENV PORT=4200
 EXPOSE 4200
 
 # Start the server (NestJS builds to dist/main.js by default)
-CMD ["node", "dist/src/main.js"]
+CMD ["npm", "start"]
 
