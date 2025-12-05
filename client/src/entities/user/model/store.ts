@@ -3,12 +3,12 @@ import { persist } from 'zustand/middleware';
 import type { UserProfile } from './types';
 
 const DEFAULT_PROFILE: UserProfile = {
-  nickname: "Гость",
-  monthlyIncome: 100000,     
-  monthlySavings: 10000,      
-  currentSavings: 50000,      
+  nickname: "",
+  monthlyIncome: 0,     
+  monthlySavings: 0,      
+  currentSavings: 0,      
   useSavings: true,           
-  blacklistedCategories: ["Видеоигры", "Азартные игры"] // черный список
+  blacklistedCategories: ["", ""]
 };
 
 interface UserState {
