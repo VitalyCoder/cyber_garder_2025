@@ -21,9 +21,11 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile.prod
+      args:
+        - DATABASE_URL=postgresql://postgres:root@postgres:5432/cyber_garder_2025?schema=public
     restart: always
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - POSTGRES_HOST=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root
@@ -40,8 +42,7 @@ services:
     ports:
       - "4200:4200"
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
     networks:
       - main
 
@@ -51,7 +52,7 @@ services:
     working_dir: /app
     restart: always
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - VITE_API_BASE_URL=http://server:4200/api
     volumes:
       - ./client:/app:ro
@@ -59,8 +60,7 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      server:
-        condition: service_started
+      - server
     networks:
       - main
 
