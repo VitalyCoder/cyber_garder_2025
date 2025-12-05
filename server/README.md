@@ -1,98 +1,298 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Cyber Garden 2025 — Server (NestJS)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Бэкенд сервиса «ZenBalance / Cyber Garden 2025» на NestJS и Prisma. Ниже — подробная документация эндпоинтов, требования к окружению и примеры запросов.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Базовая информация
 
-## Description
+- Базовый URL: `http://localhost:4200/api` (настраивается через `.env` переменную `BASE_URL`/`API_PORT`/`API_PREFIX`)
+- Формат: JSON
+- CORS: включён. В DEV допускается `origin: *`.
+- Валидация: DTO через `class-validator` и `ValidationPipe (transform + whitelist)`.
+- Авторизация: на текущем этапе эндпоинты публичные (токен не требуется). Переменная `JWT_SECRET_KEY` зарезервирована.
+- Swagger (dev): доступен по `http://localhost:4200/api/docs`.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Окружение
 
-## Project setup
+Переменные `.env` (важное):
+
+- `API_PORT='4200'`
+- `API_PREFIX="api"`
+- `BASE_URL="http://localhost:4200/api"`
+- `DATABASE_URL=postgresql://postgres:root@localhost:5436/cyber_garder_2025?schema=public`
+
+База данных: PostgreSQL (Prisma). Схема и миграции описаны в `prisma/schema.prisma`.
+
+## Эндпоинты
+
+### Пользователи (`/users`)
+
+Создание пользователя
+
+- `POST /users`
+- Тело:
+  ```json
+  {
+    "nickname": "neo",
+    "monthlyIncome": 120000,
+    "monthlySavings": 20000,
+    "currentSavings": 50000,
+    "useSavingsCalculation": true
+  }
+  ```
+- Ответ: `200 OK` — объект пользователя (Prisma `User`).
+
+Получить пользователя по id
+
+- `GET /users/:id`
+- Ответ: `200 OK` — объект пользователя или `null`.
+
+Получить пользователя по никнейму
+
+- `GET /users/by-nickname/:nickname`
+- Ответ: `200 OK` — объект пользователя или `null`.
+
+Обновить пользователя
+
+- `PATCH /users/:id`
+- Тело (любые из полей, все опциональные):
+  ```json
+  {
+    "monthlyIncome": 130000,
+    "monthlySavings": 25000,
+    "currentSavings": 60000,
+    "useSavingsCalculation": false
+  }
+  ```
+- Ответ: `200 OK` — обновлённый пользователь.
+
+Удалить пользователя
+
+- `DELETE /users/:id`
+- Ответ: `200 OK` — пусто.
+
+### Настройки пользователя (`/users/:userId/settings`)
+
+Создать/обновить настройки
+
+- `POST /users/:userId/settings`
+- Тело:
+  ```json
+  {
+    "notificationFrequency": "daily", // daily | weekly | monthly
+    "notificationChannel": "browser" // browser | email | telegram
+  }
+  ```
+- Ответ: `200 OK` — объект `UserSettings`.
+
+Получить настройки
+
+- `GET /users/:userId/settings`
+- Ответ: `200 OK` — объект `UserSettings` или `null`.
+
+### Вишлист (`/users/:userId/wishlist`)
+
+Добавить запись вишлиста
+
+- `POST /users/:userId/wishlist`
+- Тело:
+  ```json
+  {
+    "productName": "Наушники",
+    "price": 7990,
+    "category": "Гаджеты",
+    "coolingPeriodDays": 7,
+    "unlockDate": "2025-01-10T00:00:00.000Z" // опционально
+  }
+  ```
+- Ответ: `200 OK` — `{ "id": "uuid" }`.
+
+Список записей пользователя
+
+- `GET /users/:userId/wishlist`
+- Ответ: `200 OK` — массив элементов:
+  ```json
+  [
+    {
+      "id": "uuid",
+      "productName": "Наушники",
+      "price": 7990,
+      "category": "Гаджеты",
+      "coolingPeriodDays": 7,
+      "unlockDate": null,
+      "status": "waiting", // waiting | ready | bought | cancelled
+      "aiRecommendation": null,
+      "createdAt": "2025-01-06T12:00:00.000Z"
+    }
+  ]
+  ```
+
+Обновить статус записи
+
+- `PATCH /users/:userId/wishlist/:id/status`
+- Тело:
+  ```json
+  { "status": "ready" }
+  ```
+- Ответ: `200 OK` — пусто.
+
+Добавить AI-рекомендацию
+
+- `PATCH /users/:userId/wishlist/:id/ai-recommendation`
+- Тело:
+  ```json
+  { "recommendation": "Отложить покупку на 7 дней" }
+  ```
+- Ответ: `200 OK` — пусто.
+
+Удалить запись
+
+- `DELETE /users/:userId/wishlist/:id`
+- Ответ: `200 OK` — пусто.
+
+### Чёрный список категорий (`/users/:userId/blacklist`)
+
+Список
+
+- `GET /users/:userId/blacklist`
+- Ответ: `200 OK` — массив категорий.
+
+Добавить категорию
+
+- `POST /users/:userId/blacklist`
+- Тело:
+  ```json
+  { "name": "Гаджеты" }
+  ```
+- Ответ: `200 OK` — созданная категория.
+
+Удалить категорию
+
+- `DELETE /users/:userId/blacklist/:id`
+- Ответ: `200 OK` — пусто.
+
+Проверить существование категории
+
+- `GET /users/:userId/blacklist/exists?name=Гаджеты`
+- Ответ: `200 OK` — `true | false`.
+
+### Диапазоны охлаждения по цене (`/users/:userId/cooling-ranges`)
+
+Список
+
+- `GET /users/:userId/cooling-ranges`
+- Ответ: `200 OK` — массив `CoolingRange`.
+
+Добавить диапазон
+
+- `POST /users/:userId/cooling-ranges`
+- Тело:
+  ```json
+  {
+    "min": 0,
+    "max": 10000, // или null
+    "days": 7
+  }
+  ```
+- Ответ: `200 OK` — созданный диапазон.
+
+Удалить диапазон
+
+- `DELETE /users/:userId/cooling-ranges/:id`
+- Ответ: `200 OK` — пусто.
+
+Подобрать диапазон по цене
+
+- `GET /users/:userId/cooling-ranges/find?price=7990`
+- Ответ: `200 OK` — подходящий диапазон или `null`.
+
+### История действий (`/users/:userId/history`)
+
+Добавить событие
+
+- `POST /users/:userId/history`
+- Тело:
+  ```json
+  {
+    "action": "bought", // bought | cancelled | removed | postponed
+    "productName": "Наушники", // опционально
+    "price": 7990 // опционально
+  }
+  ```
+- Ответ: `200 OK` — пусто.
+
+Список истории
+
+- `GET /users/:userId/history`
+- Ответ: `200 OK` — массив:
+  ```json
+  [
+    {
+      "id": "uuid",
+      "action": "bought",
+      "productName": "Наушники",
+      "price": 7990,
+      "actionDate": "2025-01-06T12:00:00.000Z"
+    }
+  ]
+  ```
+
+### Исключения для уведомлений (`/users/:userId/notifications/excluded`)
+
+Список
+
+- `GET /users/:userId/notifications/excluded`
+- Ответ: `200 OK` — массив исключённых товаров.
+
+Добавить исключение
+
+- `POST /users/:userId/notifications/excluded`
+- Тело:
+  ```json
+  {
+    "productName": "Наушники",
+    "wishlistId": "uuid-wishlist" // опционально
+  }
+  ```
+- Ответ: `200 OK` — созданная запись.
+
+Удалить исключение
+
+- `DELETE /users/:userId/notifications/excluded/:id`
+- Ответ: `200 OK` — пусто.
+
+Проверить существование исключения
+
+- `GET /users/:userId/notifications/excluded/exists?productName=Наушники`
+- Ответ: `200 OK` — `true | false`.
+
+## Как запустить локально
 
 ```bash
-$ npm install
+# Установка зависимостей
+npm install
+
+# Генерация Prisma client (опционально, если меняли схему)
+npm run prisma:generate
+
+# Запуск dev
+npm run start:dev
+
+# Swagger (dev)
+open http://localhost:4200/api/docs
 ```
 
-## Compile and run the project
+Docker Compose (из корня репозитория или из `server/`):
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+docker compose up -d
 ```
 
-## Run tests
+## Примечания и оговорки
 
-```bash
-# unit tests
-$ npm run test
+- Версионирование API по URI объявлено, но версия может быть не задана в `.env` (в dev используется базовый префикс `/api`).
+- Валидация тел запросов — строгая: лишние поля отбрасываются, типы приводятся.
+- Ошибки клиента проходят через глобальный интерцептор `ClientExceptionsInterceptor` и фильтр `ExceptionFilter`.
 
-# e2e tests
-$ npm run test:e2e
+## Лицензия
 
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+MIT (для этого сервиса).
