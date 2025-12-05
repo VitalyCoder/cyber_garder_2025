@@ -1,0 +1,57 @@
+# Multi-stage Dockerfile for NestJS + Prisma production build
+
+# -------------------------
+# Base image
+# -------------------------
+FROM node:20-alpine AS base
+WORKDIR /app
+
+# -------------------------
+# Dependencies layer
+# -------------------------
+FROM base AS deps
+COPY package.json package-lock.json* ./
+# Увеличим устойчивость сетевых запросов npm внутри контейнера
+RUN npm config set fetch-retries 5 \
+	&& npm config set fetch-retry-factor 2 \
+	&& npm config set fetch-retry-maxtimeout 60000 \
+	&& npm config set fetch-retry-mintimeout 1000 \
+	&& npm config set registry https://registry.npmjs.org/ \
+	&& npm ci --no-audit --no-fund
+
+# -------------------------
+# Builder layer
+# -------------------------
+FROM deps AS builder
+COPY . .
+# Generate Prisma client before build
+RUN npm run prisma:generate || npx prisma generate
+# Build NestJS app
+RUN npm run build
+
+# -------------------------
+# Production runtime
+# -------------------------
+FROM node:20-alpine AS runner
+ENV NODE_ENV=production
+WORKDIR /app
+
+# Install only production deps
+# Копируем модули из builder и удаляем dev-зависимости
+COPY --from=builder /app/node_modules ./node_modules
+RUN npm prune --production --no-audit --no-fund
+
+# Copy built app and necessary files
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+
+# Prisma client is already generated in builder and present in node_modules
+COPY --from=builder /app/node_modules ./node_modules
+
+# Expose app port (compose maps 4200:4200)
+ENV PORT=4200
+EXPOSE 4200
+
+# Start the server
+CMD ["node", "dist/src/main.js"]
+
