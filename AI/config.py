@@ -11,7 +11,6 @@ class Config:
 
     MOCK_AI = os.getenv("MOCK_AI", "false").lower() == "true"
 
-    # Настройки temperature для разных задач (из ТЗ)
     TEMP_CATEGORY = 0.2
     TEMP_SURVEY = 0.5
     TEMP_ADVICE = 0.5

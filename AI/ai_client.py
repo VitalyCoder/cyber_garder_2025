@@ -4,19 +4,17 @@ from openai import AsyncOpenAI
 from config import settings
 
 client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
-
+# По большей части делали изначально как заглушку для тестов, сейчас в этом особого смысла нет
 async def ask_gpt_json(prompt: str, temperature: float = 0.5) -> dict:
     """
     Если MOCK_AI=True, возвращает заглушку.
     Иначе делает реальный запрос в GPT-4o-mini с гарантией JSON-ответа.
     """
 
-    # НРЕЖИМ ОТЛАДКИ (MOCK)
     if settings.MOCK_AI:
         print(f"\n[MOCK MODE] Запрос перехвачен. AI не вызывается.")
         await asyncio.sleep(0.5) # Имитация задержки сети
-
-        # 1. Синонимизация категорий
+        # Синонимизация категорий
         if "related to ANY of these blacklist categories" in prompt:
             print("[MOCK] Возвращаю ответ для 'Category Similarity'")
             return {
@@ -25,8 +23,7 @@ async def ask_gpt_json(prompt: str, temperature: float = 0.5) -> dict:
                 "related_to": "Видеоигры",
                 "reason": "Это тестовая блокировка в режиме отладки."
             }
-
-        # 2. Финансовый совет
+        # Финансовый совет
         if "Analyze if this purchase is financially reasonable" in prompt:
             print("[MOCK] Возвращаю ответ для 'Purchase Advice'")
             return {
@@ -35,8 +32,7 @@ async def ask_gpt_json(prompt: str, temperature: float = 0.5) -> dict:
                 "key_message": "Слишком дорого (Тест).",
                 "confidence": 0.85
             }
-
-        # 3. Опрос
+        # Опрос
         if "Generate an INTERACTIVE SURVEY" in prompt:
             print("[MOCK] Возвращаю ответ для 'Survey'")
             return {
@@ -58,7 +54,7 @@ async def ask_gpt_json(prompt: str, temperature: float = 0.5) -> dict:
                 "message": "Это тестовая генерация опроса."
             }
 
-        # 4. Мотивация
+        # Мотивация
         if "Generate a SHORT motivational message" in prompt:
             print("[MOCK] Возвращаю ответ для 'Motivation'")
             return {

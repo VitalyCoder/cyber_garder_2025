@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field, conlist, confloat
 from typing import List, Union, Any, Optional
 
-# --- 1. Category Similarity ---
 class CategorySimilarityRequest(BaseModel):
     user_category: str
     blacklist_categories: List[str] = []
@@ -12,7 +11,6 @@ class CategorySimilarityResponse(BaseModel):
     related_to: Optional[str] = None
     reason: str
 
-# --- 2. Purchase Advice ---
 class PurchaseAdviceRequest(BaseModel):
     product_name: str
     price: int
@@ -27,7 +25,6 @@ class PurchaseAdviceResponse(BaseModel):
     key_message: str
     confidence: Any = None
 
-# --- 3. Generate Survey ---
 class WishlistItem(BaseModel):
     name: str
     price: int
@@ -58,7 +55,6 @@ class GenerateSurveyResponse(BaseModel):
     items: List[SurveyItem]
     message: str
 
-# --- 4. Motivation ---
 class MotivationRequest(BaseModel):
     action: str
     product_name: str
@@ -68,3 +64,50 @@ class MotivationRequest(BaseModel):
 
 class MotivationResponse(BaseModel):
     message: str
+
+class ParseLinkRequest(BaseModel):
+    url: str
+
+class ParseLinkResponse(BaseModel):
+    product_name: str
+    price: int
+    currency: str = "RUB"
+    found: bool = True
+    error: Optional[str] = None
+
+class ChatContext(BaseModel):
+    nickname: str
+    monthly_income: int
+    current_savings: int
+    monthly_savings: int
+    wishlist_summary: Optional[str] = "Вишлист пуст"
+
+    blacklist_categories: List[str] = []
+
+    expense_stats: Optional[str] = "Нет данных о тратах"
+
+class ChatMessage(BaseModel):
+    role: str = Field(pattern='^(user|assistant)$')
+    content: str
+
+class ChatRequest(BaseModel):
+    message: str
+    context: ChatContext
+    history: List[ChatMessage] = []
+
+class ChatResponse(BaseModel):
+    reply: str
+    is_refusal: bool = False
+
+class FinancialPlanRequest(BaseModel):
+    nickname: str
+    monthly_income: int
+    current_savings: int
+    monthly_savings_goal: int
+    expenses_breakdown: str
+    financial_goal: str
+    goal_cost: int
+
+class FinancialPlanResponse(BaseModel):
+    plan_markdown: str
+    key_steps: List[str]
