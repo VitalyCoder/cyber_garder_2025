@@ -48,6 +48,7 @@ model User {
   coolingRanges        CoolingRange[]
   notificationExcluded NotificationExcludedProduct[]
   telegramLink         TelegramLink?
+  reports              Report[]
 }
 
 model UserSettings {
@@ -123,4 +124,16 @@ model TelegramLink {
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   chatId   String
   linkedAt DateTime @default(now())
+}
+
+model Report {
+  id              String   @id @default(uuid())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  type            String // e.g., "financial_plan"
+  contentMarkdown String
+  keySteps        String // JSON string array of key steps
+  createdAt       DateTime @default(now())
+
+  @@index([userId, type])
 }

@@ -1,23 +1,43 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsString, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsBoolean,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Min,
+} from 'class-validator';
 
 export class CheckProductDto {
-  @ApiProperty({ example: 'MacBook Pro' })
+  @ApiPropertyOptional({ example: 'MacBook Pro' })
+  @IsOptional()
   @IsString()
-  productName!: string;
+  productName?: string;
 
-  @ApiProperty({ example: 150000, minimum: 0 })
+  @ApiPropertyOptional({ example: 150000, minimum: 0 })
+  @IsOptional()
   @IsInt()
   @Min(0)
-  price!: number;
+  price?: number;
 
-  @ApiProperty({ example: 'Техника' })
+  @ApiPropertyOptional({ example: 'Техника' })
+  @IsOptional()
   @IsString()
-  category!: string;
+  category?: string;
 
   @ApiProperty({ example: 'uuid-user' })
   @IsString()
   userId!: string;
+
+  @ApiPropertyOptional({ example: 'https://market.yandex.ru/product/123' })
+  @IsOptional()
+  @IsUrl()
+  productUrl?: string;
+
+  @ApiPropertyOptional({ description: 'Форс-одобрение покупки при заморозке' })
+  @IsOptional()
+  @IsBoolean()
+  force?: boolean;
 }
 
 export class CheckProductResponseDto {
@@ -27,4 +47,9 @@ export class CheckProductResponseDto {
   ai_reason?: string | null;
   ai_advice?: string | null;
   can_afford_now?: boolean;
+  forced?: boolean;
+  // Доп. поля для режима анализа ссылки
+  detected_name?: string;
+  detected_price?: number;
+  detected_category?: string;
 }

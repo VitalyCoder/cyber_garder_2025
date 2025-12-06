@@ -15,6 +15,8 @@ export class ProductsController {
       productName: dto.productName,
       price: dto.price,
       category: dto.category,
+      productUrl: dto.productUrl,
+      force: dto.force === true,
     });
 
     return {
@@ -24,6 +26,10 @@ export class ProductsController {
       ai_reason: result.aiReason ?? null,
       ai_advice: result.aiAdvice ?? null,
       can_afford_now: result.canAffordNow ?? false,
+      forced: result.forced ?? false,
+      detected_name: result.detectedName,
+      detected_price: result.detectedPrice,
+      detected_category: result.detectedCategory,
     };
   }
 }

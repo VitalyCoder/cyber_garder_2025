@@ -18,9 +18,13 @@ export class CreateWishlistItemDto {
   @Min(0)
   price!: number;
 
-  @ApiProperty({ example: 'Гаджеты', description: 'Категория товара' })
+  @ApiPropertyOptional({
+    example: 'Гаджеты',
+    description: 'Категория товара (опционально, может быть нормализована ИИ)',
+  })
+  @IsOptional()
   @IsString()
-  category!: string;
+  category?: string;
 
   @ApiProperty({
     example: 7,

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AiService } from 'src/infrastructure/ai/ai.service';
 import { WishlistController } from 'src/presentation/wishlist/wishlist.controller';
 import { WishlistService } from 'src/use-cases/wishlist/wishlist.service';
 
@@ -10,6 +11,7 @@ import { WishlistService } from 'src/use-cases/wishlist/wishlist.service';
       provide: 'IWishlistService',
       useClass: WishlistService,
     },
+    AiService,
   ],
   exports: ['IWishlistService'],
 })

@@ -21,6 +21,18 @@ export interface ChatResult {
   is_refusal?: boolean;
 }
 
+export interface FinancialPlanResult {
+  plan_markdown: string;
+  key_steps: string[];
+}
+
+export interface ParseLinkResult {
+  product_name: string;
+  price: number;
+  found: boolean;
+  error?: string | null;
+}
+
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
@@ -120,6 +132,28 @@ export class AiService {
       context: options?.context,
       history: options?.history,
     })) as ChatResult;
+    return res;
+  }
+
+  async financialPlan(params: {
+    nickname: string;
+    monthly_income: number;
+    current_savings: number;
+    financial_goal: string;
+    goal_cost: number;
+    expenses_breakdown: string;
+  }): Promise<FinancialPlanResult> {
+    if (!this.baseUrl) throw new Error('AI_SERVICE_URL is not configured');
+    const res = (await this.post(
+      '/ai/financial-plan',
+      params,
+    )) as FinancialPlanResult;
+    return res;
+  }
+
+  async parseLink(url: string): Promise<ParseLinkResult> {
+    if (!this.baseUrl) throw new Error('AI_SERVICE_URL is not configured');
+    const res = (await this.post('/ai/parse-link', { url })) as ParseLinkResult;
     return res;
   }
 }

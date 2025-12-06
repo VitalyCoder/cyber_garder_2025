@@ -18,9 +18,11 @@ export class ProductsService {
    */
   async checkProduct(params: {
     userId: string;
-    productName: string;
-    price: number;
-    category: string;
+    productName?: string;
+    price?: number;
+    category?: string;
+    productUrl?: string;
+    force?: boolean;
   }): Promise<{
     status: 'APPROVED' | 'COOLING' | 'BLOCKED';
     coolingDays?: number;
@@ -28,15 +30,60 @@ export class ProductsService {
     canAffordNow?: boolean;
     aiReason?: string | null;
     aiAdvice?: string | null;
+    forced?: boolean;
+    detectedName?: string;
+    detectedPrice?: number;
+    detectedCategory?: string;
   }> {
-    const { userId, price, category } = params;
+    const { userId, force } = params;
+    let price = params.price;
+    const categoryInput = params.category;
+    let productName = params.productName;
+
+    // 0) Если передана ссылка, пытаемся распарсить через AI
+    if (params.productUrl) {
+      try {
+        const parsed = await this.ai.parseLink(params.productUrl);
+        if (parsed?.found) {
+          productName = parsed.product_name || productName;
+          price = typeof parsed.price === 'number' ? parsed.price : price;
+        }
+        // Категорию по ссылке AI не возвращает — оставляем переданную или пустую
+        // Возвращаем детектированные поля в ответе
+        const baseDetected = {
+          detectedName: parsed?.product_name,
+          detectedPrice: parsed?.price,
+          detectedCategory: categoryInput ?? 'Другое',
+        } as const;
+
+        // Если после парсинга нет цены — вернём минимально информативный ответ
+        if (!price || price <= 0) {
+          return {
+            status: 'COOLING',
+            coolingDays: 0,
+            unlockDate: null,
+            canAffordNow: false,
+            aiReason: parsed?.error ?? 'Не удалось определить цену по ссылке',
+            aiAdvice: null,
+            forced: false,
+            ...baseDetected,
+          };
+        }
+
+        // Для дальнейшей логики используем распознанные значения
+        // productName и price уже скорректированы выше
+      } catch {
+        // Ошибка сервиса AI — продолжаем без парсинга
+      }
+    }
 
     // 1) Check blacklist direct match
-    const blocked = await this.blacklist.exists(userId, category);
+    const safeCategory = categoryInput ?? 'Другое';
+    const blocked = await this.blacklist.exists(userId, safeCategory);
     if (blocked) {
       return {
         status: 'BLOCKED',
-        aiReason: `Категория "${category}" находится в чёрном списке пользователя`,
+        aiReason: `Категория "${safeCategory}" находится в чёрном списке пользователя`,
         aiAdvice: null,
         canAffordNow: false,
         unlockDate: null,
@@ -47,7 +94,7 @@ export class ProductsService {
     try {
       const blacklistItems = await this.blacklist.list(userId);
       const aiCat = await this.ai.checkCategorySimilarity(
-        category,
+        safeCategory,
         blacklistItems.map((b) => b.name),
       );
       if (aiCat?.is_blocked && (aiCat?.similarity ?? 0) > 0.7) {
@@ -64,12 +111,12 @@ export class ProductsService {
     }
 
     // 2) Cooling period by price range
-    const range = await this.ranges.findForPrice(userId, price);
+    const range = await this.ranges.findForPrice(userId, price ?? 0);
     const coolingDaysByPrice = range?.days ?? 0;
 
     // 3) User savings rule (useSavingsCalculation)
     const user = await this.users.findById(userId);
-    const canAffordNow = (user?.currentSavings ?? 0) >= price;
+    const canAffordNow = (user?.currentSavings ?? 0) >= (price ?? 0);
 
     let finalCoolingDays = coolingDaysByPrice;
     if (user?.useSavingsCalculation) {
@@ -77,14 +124,26 @@ export class ProductsService {
       // ТЗ: "половина от месячного объёма" — добавим дополнительный период ожидания,
       // если требуется накопить существенную часть суммы.
       // Пример эвристики: сколько месяцев нужно, чтобы накопить половину цены.
-      const halfPrice = Math.floor(price / 2);
+      const halfPrice = Math.floor((price ?? 0) / 2);
       const monthsToHalf =
         monthlySavings > 0 ? Math.ceil(halfPrice / monthlySavings) : 0;
       const daysToAffordHalf = monthsToHalf * 30; // грубо, без календаря
       finalCoolingDays = Math.max(coolingDaysByPrice, daysToAffordHalf);
     }
 
-    // 4) Determine status
+    // 4) Determine status (allow force approve even during cooling)
+    if (force === true) {
+      return {
+        status: 'APPROVED',
+        coolingDays: 0,
+        unlockDate: new Date(),
+        canAffordNow,
+        aiReason: 'Покупка одобрена форсом пользователем',
+        aiAdvice: null,
+        forced: true,
+      };
+    }
+
     if (finalCoolingDays <= 0 && canAffordNow) {
       return {
         status: 'APPROVED',
@@ -93,6 +152,10 @@ export class ProductsService {
         canAffordNow,
         aiReason: null,
         aiAdvice: null,
+        forced: false,
+        detectedName: productName,
+        detectedPrice: price,
+        detectedCategory: safeCategory,
       };
     }
 
@@ -105,8 +168,8 @@ export class ProductsService {
     let status: 'APPROVED' | 'COOLING' | 'BLOCKED' = 'COOLING';
     try {
       const advice = await this.ai.getPurchaseAdvice({
-        product_name: params.productName,
-        price,
+        product_name: productName ?? 'Товар',
+        price: price ?? 0,
         user_income: user?.monthlyIncome ?? 0,
         user_savings: user?.currentSavings ?? 0,
         monthly_savings: user?.monthlySavings ?? 0,
@@ -128,6 +191,10 @@ export class ProductsService {
       canAffordNow,
       aiReason,
       aiAdvice,
+      forced: false,
+      detectedName: productName,
+      detectedPrice: price,
+      detectedCategory: safeCategory,
     };
   }
 }
