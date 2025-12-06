@@ -7,6 +7,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { UsersService } from 'src/use-cases/users/users.service';
 import { AiService } from '../../infrastructure/ai/ai.service';
 
 @WebSocketGateway({ cors: { origin: '*' } })
@@ -16,7 +17,10 @@ export class ChatGateway {
 
   private readonly logger = new Logger(ChatGateway.name);
 
-  constructor(private readonly aiService: AiService) {}
+  constructor(
+    private readonly aiService: AiService,
+    private readonly usersService: UsersService,
+  ) {}
 
   handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
@@ -40,14 +44,38 @@ export class ChatGateway {
     },
     @ConnectedSocket() client: Socket,
   ) {
+    console.log(payload);
+
     const text = payload?.text?.trim();
     if (!text) return;
 
     try {
       // Отправляем сообщение нейронке через AiService
+      // Собираем минимально необходимый контекст для AI, если клиент его не передал
+      let ctx = payload.context;
+      if (!ctx) {
+        const userId = payload.userId;
+        if (userId) {
+          const user = await this.usersService.findById(userId);
+          ctx = {
+            nickname: user?.nickname ?? 'user',
+            monthly_income: user?.monthlyIncome ?? 0,
+            current_savings: user?.currentSavings ?? 0,
+            monthly_savings: user?.monthlySavings ?? 0,
+          };
+        } else {
+          ctx = {
+            nickname: 'user',
+            monthly_income: 0,
+            current_savings: 0,
+            monthly_savings: 0,
+          };
+        }
+      }
+
       const reply = await this.aiService.chat(text, {
         userId: payload.userId,
-        context: payload.context,
+        context: ctx,
         history: payload.history,
       });
       console.log(reply);
@@ -58,8 +86,12 @@ export class ChatGateway {
         is_refusal: false,
       });
     } catch (e) {
-      this.logger.error('AI call failed', e as Error);
-      client.emit('chat:error', { message: 'AI недоступен' });
+      const err = e as Error;
+      this.logger.error('AI call failed', err);
+      client.emit('chat:error', {
+        message:
+          'Сервис ИИ сейчас недоступен или отвечает слишком медленно. Попробуй ещё раз чуть позже.',
+      });
     }
   }
 }

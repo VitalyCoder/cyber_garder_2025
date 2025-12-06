@@ -15,6 +15,7 @@ import { TelegramModule } from './nest/modules/telegram.module';
 import { UsersModule } from './nest/modules/users.module';
 import { UsersSettingsModule } from './nest/modules/usersSettings.module';
 import { WishlistModule } from './nest/modules/wishlist.module';
+import { UsersService } from './use-cases/users/users.service';
 
 @Module({
   imports: [
@@ -32,6 +33,6 @@ import { WishlistModule } from './nest/modules/wishlist.module';
     TelegramModule,
     ReportsModule,
   ],
-  providers: [ChatGateway, AiService],
+  providers: [UsersService, ChatGateway, AiService],
 })
 export class AppModule {}

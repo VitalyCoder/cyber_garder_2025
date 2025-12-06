@@ -1,88 +1,92 @@
 import json
-import asyncio
+import httpx
 from openai import AsyncOpenAI
 from config import settings
 
-client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
-# По большей части делали изначально как заглушку для тестов, сейчас в этом особого смысла нет
-async def ask_gpt_json(prompt: str, temperature: float = 0.5) -> dict:
+# Увеличиваем таймаут клиента до 60 секунд
+client = AsyncOpenAI(
+    api_key=settings.OPENAI_API_KEY,
+    http_client=httpx.AsyncClient(timeout=60.0)
+)
+
+async def ask_gpt_json(prompt: str, temperature: float = 0.7) -> dict:
     """
-    Если MOCK_AI=True, возвращает заглушку.
-    Иначе делает реальный запрос в GPT-4o-mini с гарантией JSON-ответа.
+    Отправляет запрос в GPT и возвращает чистый JSON.
+    Обрабатывает ошибки парсинга и таймауты.
     """
+    messages = [
+        {
+            "role": "system",
+            "content": "Always return valid JSON. No markdown formatting."
+        },
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ]
 
-    if settings.MOCK_AI:
-        print(f"\n[MOCK MODE] Запрос перехвачен. AI не вызывается.")
-        await asyncio.sleep(0.5) # Имитация задержки сети
-        # Синонимизация категорий
-        if "related to ANY of these blacklist categories" in prompt:
-            print("[MOCK] Возвращаю ответ для 'Category Similarity'")
-            return {
-                "is_blocked": True,
-                "similarity": 0.95,
-                "related_to": "Видеоигры",
-                "reason": "Это тестовая блокировка в режиме отладки."
-            }
-        # Финансовый совет
-        if "Analyze if this purchase is financially reasonable" in prompt:
-            print("[MOCK] Возвращаю ответ для 'Purchase Advice'")
-            return {
-                "status": "COOLING",
-                "advice": "В режиме теста советуем подождать. Это 15% твоего дохода.",
-                "key_message": "Слишком дорого (Тест).",
-                "confidence": 0.85
-            }
-        # Опрос
-        if "Generate an INTERACTIVE SURVEY" in prompt:
-            print("[MOCK] Возвращаю ответ для 'Survey'")
-            return {
-                "title": "Тестовый опрос 📋",
-                "items": [
-                    {
-                        "product_name": "Тестовый товар",
-                        "price": 1000,
-                        "question": "Ты всё ещё хочешь это? (Тест)",
-                        "status": "waiting",
-                        "days_left": 5,
-                        "options": [
-                            {"label": "Да", "action": "keep"},
-                            {"label": "Нет", "action": "delete"},
-                            {"label": "Отложить", "action": "postpone"}
-                        ]
-                    }
-                ],
-                "message": "Это тестовая генерация опроса."
-            }
-
-        # Мотивация
-        if "Generate a SHORT motivational message" in prompt:
-            print("[MOCK] Возвращаю ответ для 'Motivation'")
-            return {
-                "message": "Ты молодец! Тестовая мотивация работает отлично! 💪"
-            }
-
-        return {"error": "Mock type not recognized"}
     try:
         response = await client.chat.completions.create(
             model=settings.MODEL,
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant that outputs JSON."},
-                {"role": "user", "content": prompt}
-            ],
-            response_format={"type": "json_object"} if settings.JSON_MODE else None,
+            messages=messages,
             temperature=temperature,
+            response_format={"type": "json_object"},
             max_tokens=1000
         )
 
-        content = response.choices[0].message.content
+        # УНИВЕРСАЛЬНОЕ ЧТЕНИЕ ОТВЕТА
+        content = ""
+        if hasattr(response, 'choices'):
+            content = response.choices[0].message.content
+        elif isinstance(response, dict):
+            content = response['choices'][0]['message']['content']
+        else:
+            content = response.choices[0].message.content
+
         if not content:
-            raise ValueError("Empty response from OpenAI")
+            raise ValueError("Empty response from AI")
 
         return json.loads(content)
 
     except json.JSONDecodeError:
-        # Fallback на случай битого JSON
-        raise ValueError("Failed to decode JSON from LLM response")
+        return {"error": "Invalid JSON"}
     except Exception as e:
         print(f"OpenAI Error: {e}")
-        raise e
+        return {}
+
+async def ask_perplexity(messages: list) -> dict:
+    """
+    Запрос к Perplexity API для поиска в интернете.
+    """
+    if not settings.PERPLEXITY_API_KEY:
+        print("Perplexity API key not found")
+        return None
+
+    headers = {
+        "Authorization": f"Bearer {settings.PERPLEXITY_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "model": "sonar-reasoning-pro",
+        "messages": messages,
+        "temperature": 0.1
+    }
+
+    async with httpx.AsyncClient(timeout=60.0) as http_client:
+        try:
+            response = await http_client.post(
+                "https://api.perplexity.ai/chat/completions",
+                json=payload,
+                headers=headers
+            )
+            response.raise_for_status()
+            data = response.json()
+
+            content = data['choices'][0]['message']['content']
+            clean_json = content.replace("``````", "").strip()
+            return json.loads(clean_json)
+
+        except Exception as e:
+            print(f"Perplexity Error: {e}")
+            return None

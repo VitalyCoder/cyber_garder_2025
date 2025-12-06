@@ -37,8 +37,8 @@ export interface ParseLinkResult {
 export class AiService {
   private readonly logger = new Logger(AiService.name);
   private readonly baseUrl: string;
-  private readonly timeoutMs = 10000; // увеличен таймаут до 10s
-  private readonly maxRetries = 2;
+  private readonly timeoutMs = 20000; // увеличен таймаут до 20s для стабильности
+  private readonly maxRetries = 1; // уменьшаем число повторов, чтобы быстрее вернуть ошибку
 
   constructor(private readonly config: ConfigService) {
     this.baseUrl = this.config.get<string>('AI_SERVICE_URL') ?? '';

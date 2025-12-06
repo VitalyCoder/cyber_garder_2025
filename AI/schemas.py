@@ -1,29 +1,29 @@
-from pydantic import BaseModel, Field, conlist, confloat
-from typing import List, Union, Any, Optional
+from pydantic import BaseModel, Field
+from typing import List, Optional, Union, Any
 
 class CategorySimilarityRequest(BaseModel):
     user_category: str
-    blacklist_categories: List[str] = []
+    blacklist_categories: List[str]
 
 class CategorySimilarityResponse(BaseModel):
     is_blocked: bool
-    similarity: float = Field(..., ge=0.0, le=1.0)
+    similarity: float
     related_to: Optional[str] = None
-    reason: str
+    reason: Optional[str] = None
 
 class PurchaseAdviceRequest(BaseModel):
     product_name: str
-    price: int
-    user_income: int
-    user_savings: int
-    monthly_savings: int
-    cooling_days: int
+    price: int = Field(gt=0, le=999_999_999, description="Price must be positive.")
+    user_income: int = Field(gt=0, description="Income must be positive.")
+    user_savings: int = Field(ge=0)
+    monthly_savings: int = Field(ge=0)
+    cooling_days: int = Field(ge=0)
 
 class PurchaseAdviceResponse(BaseModel):
-    status: str = Field(pattern='^(APPROVED|COOLING|BLOCKED)$')
+    status: str
     advice: str
     key_message: str
-    confidence: Any = None
+    confidence: float
 
 class WishlistItem(BaseModel):
     name: str
@@ -32,63 +32,46 @@ class WishlistItem(BaseModel):
     status: str
 
 class GenerateSurveyRequest(BaseModel):
-    wishlist_items: List[WishlistItem]
     nickname: str
-    monthly_savings: int
-
-class SurveyOption(BaseModel):
-    label: str
-    action: str
-
-class SurveyItem(BaseModel):
-    product_name: str = Field(..., alias="name")
-    price: int = 0
-    question: str
-    status: str
-    days_left: int
-    options: List[Union[SurveyOption, str]]
-    class Config:
-        populate_by_name = True
+    wishlist_items: List[WishlistItem]
+    monthly_savings: int = Field(ge=0)
 
 class GenerateSurveyResponse(BaseModel):
     title: str
-    items: List[SurveyItem]
     message: str
+    items: List[Any] # Ослабляем проверку, т.к. AI часто ошибается
 
 class MotivationRequest(BaseModel):
-    action: str
+    action: str = Field(pattern=r"^(product_removed|impulse_detected|product_ready)$")
     product_name: str
     nickname: str
-    price: int
-    savings_delta: int
+    price: int = Field(ge=0)
+    savings_delta: int = Field(ge=0)
 
 class MotivationResponse(BaseModel):
     message: str
 
 class ParseLinkRequest(BaseModel):
-    url: str
+    url: str = Field(pattern=r"^https?://[^\s/$.?#].[^\s]*$")
 
 class ParseLinkResponse(BaseModel):
-    product_name: str
-    price: int
-    currency: str = "RUB"
-    found: bool = True
+    product_name: str = ""
+    price: int = 0
+    found: bool = False
     error: Optional[str] = None
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str
 
 class ChatContext(BaseModel):
     nickname: str
     monthly_income: int
     current_savings: int
     monthly_savings: int
-    wishlist_summary: Optional[str] = "Вишлист пуст"
-
-    blacklist_categories: List[str] = []
-
-    expense_stats: Optional[str] = "Нет данных о тратах"
-
-class ChatMessage(BaseModel):
-    role: str = Field(pattern='^(user|assistant)$')
-    content: str
+    wishlist_summary: Optional[str] = None
+    blacklist_categories: Optional[List[str]] = []
+    expense_stats: Optional[str] = None
 
 class ChatRequest(BaseModel):
     message: str
@@ -97,14 +80,14 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     reply: str
-    is_refusal: bool = False
+    is_refusal: bool
 
 class FinancialPlanRequest(BaseModel):
     nickname: str
     monthly_income: int
     current_savings: int
     monthly_savings_goal: int
-    expenses_breakdown: str
+    expenses_breakdown: Any
     financial_goal: str
     goal_cost: int
 
