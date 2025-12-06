@@ -45,10 +45,11 @@ export class ChatGateway {
 
     try {
       // Отправляем сообщение нейронке через AiService
-      const reply = await this.aiService.chat(
-        text,
-        payload.userId ?? undefined,
-      );
+      const reply = await this.aiService.chat(text, {
+        userId: payload.userId,
+        context: payload.context,
+        history: payload.history,
+      });
       // Отправляем ответ ТОЛЬКО инициатору вопроса
       client.emit('chat:reply', {
         text: reply ?? '...',
