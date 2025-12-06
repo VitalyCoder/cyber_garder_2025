@@ -1,20 +1,40 @@
 import { useUserStore } from '@/store/userStore';
+import { coolingRangeApi } from '@/shared/api/api'; // Импортируем API для подсчета правил (опционально)
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Profile.module.css';
 
 export const Profile = () => {
     const user = useUserStore(s => s.user);
     const navigate = useNavigate();
+    
+    // Состояние для количества правил охлаждения (для красоты)
+    const [coolingCount, setCoolingCount] = useState<number | null>(null);
+
+    // Подгружаем количество правил, чтобы показать в карточке
+    useEffect(() => {
+        if (user) {
+            coolingRangeApi.list(user.id)
+                .then(data => setCoolingCount(data.length))
+                .catch(() => setCoolingCount(0));
+        }
+    }, [user]);
 
     if (!user) return null;
 
     return (
         <div className={styles.container}>
             <div className={styles.card}>
-                <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-2">
+                <div className={styles.cardHeader}>
                     <h3 className={styles.cardTitle}>💰 Финансы</h3>
+                    <button 
+                        className={styles.smallEditBtn}
+                        style={{marginBottom: '18px'}}
+                        onClick={() => navigate('/settings/profile')}
+                    >
+                        Изменить
+                    </button>
                 </div>
-                
                 <div className={styles.row}>
                     <span className='text-gray-500'>Доход:</span>
                     <span className='font-mono font-medium text-lg'>
@@ -35,8 +55,17 @@ export const Profile = () => {
                 </div>
             </div>
 
-            <div className={styles.card}>
-                <h3 className={styles.cardTitle}>⛔ Черный список</h3>
+            <div className={styles.card} >
+                <div className={styles.cardHeader}>
+                    <h3 className={styles.cardTitle} style={{fontSize: '17px'}}>⛔ Черный список</h3>
+                    <button 
+                        className={styles.smallEditBtn}
+                        style={{marginBottom: '18px'}}
+                        onClick={() => navigate('/settings/blacklist')}
+                    >
+                        Изменить
+                    </button>
+                </div>
                 <div className='flex flex-wrap gap-2 mt-2'>
                     {(user.blacklistedCategories ?? []).length > 0 ? (
                         (user.blacklistedCategories ?? []).map(cat => (
@@ -50,40 +79,38 @@ export const Profile = () => {
                 </div>
             </div>
 
-            <div className='mt-6 grid grid-cols-1 gap-3'>
-                <button
-                    className={styles.navButton}
-                    onClick={() => navigate('/settings/profile')}
-                >
-                    <span className="text-xl">✏️</span>
-                    <div className="flex flex-col items-start">
-                        <span className="font-bold text-gray-800">Редактировать финансы</span>
-                        <span className="text-xs text-gray-400">Доход, накопления, настройки</span>
-                    </div>
-                </button>
-
-                <button
-                    className={styles.navButton}
-                    onClick={() => navigate('/settings/blacklist')}
-                >
-                    <span className="text-xl">⚠️</span>
-                    <div className="flex flex-col items-start">
-                        <span className="font-bold text-gray-800">Черный список</span>
-                        <span className="text-xs text-gray-400">Управление запрещенными категориями</span>
-                    </div>
-                </button>
-
-                <button
-                    className={styles.navButton}
-                    onClick={() => navigate('/settings/cooling-ranges')}
-                >
-                    <span className="text-xl">❄️</span>
-                    <div className="flex flex-col items-start">
-                        <span className="font-bold text-gray-800">Правила охлаждения</span>
-                        <span className="text-xs text-gray-400">Настройка периодов ожидания</span>
-                    </div>
-                </button>
+            <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                    <h3 className={styles.cardTitle} style={{marginBottom: '-5px'}}>❄️ Охлаждение</h3>
+                    <button 
+                        className={styles.smallEditBtn}
+                        onClick={() => navigate('/settings/cooling-ranges')}
+                    >
+                        Изменить
+                    </button>
+                </div>
+                <div className="text-sm text-gray-600">
+                    {coolingCount !== null ? (
+                        <>Активных правил: <span className="font-bold">{coolingCount}</span></>
+                    ) : (
+                        "Загрузка..."
+                    )}
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                    Настройка периодов ожидания для разных сумм.
+                </p>
             </div>
+
+            {/* 
+            <div className='mt-4'>
+                <button
+                    className={styles.navButton}
+                    onClick={() => navigate('/settings/notifications')}
+                >
+                    🔔 Настройки уведомлений
+                </button>
+            </div> 
+            */}
         </div>
     );
 };

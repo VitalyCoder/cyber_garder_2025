@@ -1,10 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUserStore } from '@/store/userStore';
-import type { User } from '@/types'; 
 import styles from './OnboardingFlow.module.css';
+import type { AddCoolingRangeDto } from '@/shared/api/api';
 import { Step1Profile } from '../step1Profile';
 import { Step2Settings } from '../step2Settings';
+import { Step3Cooling } from '../step3Cooling/Step3Cooling';
+interface OnboardingFormData {
+  nickname: string;
+  monthlyIncome: number;
+  monthlySavings: number;
+  currentSavings: number;
+  useSavings: boolean;
+  blacklistedCategories: string[];
+  coolingRanges: AddCoolingRangeDto[];
+}
 
 export const OnboardingFlow = () => {
   const navigate = useNavigate();
@@ -14,16 +24,17 @@ export const OnboardingFlow = () => {
 
   const [step, setStep] = useState(1);
 
-  const [formData, setFormData] = useState<Partial<User>>({
+  const [formData, setFormData] = useState<OnboardingFormData>({
     nickname: '',
     monthlyIncome: 0,
     monthlySavings: 0,
     currentSavings: 0,
     useSavings: false, 
     blacklistedCategories: [],
+    coolingRanges: [] 
   });
 
-  const updateFormData = (updates: Partial<User>) => {
+  const updateFormData = (updates: Partial<OnboardingFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
   };
 
@@ -40,14 +51,15 @@ export const OnboardingFlow = () => {
             monthlySavings: formData.monthlySavings || 0,
             currentSavings: formData.currentSavings || 0,
             useSavingsCalculation: formData.useSavings || false,
-            blacklistedCategories: formData.blacklistedCategories || [] 
+            blacklistedCategories: formData.blacklistedCategories,
+            coolingRanges: formData.coolingRanges 
         });
 
         navigate('/dashboard');
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-        alert("Не удалось создать профиль. Возможно, такой никнейм уже занят.");
+        console.error(error);
+        alert("Не удалось создать профиль. Возможно, сервер недоступен.");
     }
   };
 
@@ -58,6 +70,7 @@ export const OnboardingFlow = () => {
         <div className={styles.progressBar}>
           <div className={`${styles.progressStep} ${step >= 1 ? styles.active : ''}`} />
           <div className={`${styles.progressStep} ${step >= 2 ? styles.active : ''}`} />
+          <div className={`${styles.progressStep} ${step >= 3 ? styles.active : ''}`} />
         </div>
 
         {isLoading && (
@@ -79,6 +92,15 @@ export const OnboardingFlow = () => {
             formData={formData}
             onChange={updateFormData}
             onBack={() => setStep(1)}
+            onFinish={() => setStep(3)} 
+          />
+        )}
+
+        {step === 3 && (
+          <Step3Cooling
+            ranges={formData.coolingRanges}
+            onChange={(ranges) => updateFormData({ coolingRanges: ranges })}
+            onBack={() => setStep(2)}
             onFinish={handleFinish}
           />
         )}

@@ -8,9 +8,9 @@ import { appEvents, HISTORY_UPDATED_EVENT } from '@/shared/lib/eventBus';
 import { useUserStore } from '@/store/userStore';
 import type { ApiCheckStatus } from '@/types';
 import { useState } from 'react';
-import { ProductInput } from '../../features/checkProduct/ui/productInput';
-import { ResultCard } from '../../features/checkProduct/ui/resultCard/ResultCard';
 import styles from './AddProductModal.module.css';
+import { ResultCard } from '@/features/checkProduct/ui/resultCard/ResultCard';
+import { ProductInput, type ProductData } from '@/features/checkProduct/ui/productInput/ProductInput';
 
 interface Props {
 	onClose: () => void;
@@ -29,18 +29,9 @@ export const AddProductModal = ({ onClose }: Props) => {
 		category: string;
 	} | null>(null);
 
-	const handleCheck = async (data: {
-		product_name: string;
-		price: number;
-		category: string;
-	}) => {
+	const handleCheck = async (data: ProductData) => {
 		if (!user) return;
 		setIsLoading(true);
-		setCurrentProduct({
-			name: data.product_name,
-			price: data.price,
-			category: data.category,
-		});
 
 		try {
 			const res = await productsApi.check({
@@ -48,11 +39,28 @@ export const AddProductModal = ({ onClose }: Props) => {
 				productName: data.product_name,
 				price: data.price,
 				category: data.category,
+				productUrl: data.product_url
 			});
+
 			setResult(res);
+
+			if (data.product_url) {
+				setCurrentProduct({
+					name: res.detected_name || 'Товар по ссылке',
+					price: res.detected_price || 0,
+					category: res.detected_category || 'Другое',
+				});
+			} else {
+				setCurrentProduct({
+					name: data.product_name!,
+					price: data.price!,
+					category: data.category!,
+				});
+			}
+
 		} catch (e) {
 			console.error(e);
-			alert('Не удалось связаться с ИИ.');
+			alert('Не удалось связаться с ИИ или распознать ссылку.');
 		} finally {
 			setIsLoading(false);
 		}
@@ -93,7 +101,7 @@ export const AddProductModal = ({ onClose }: Props) => {
 	const mapStatusForUi = (apiStatus: string): ApiCheckStatus => {
 		if (apiStatus === 'COOLING') return 'COOLDOWN';
 		if (apiStatus === 'BLOCKED') return 'BLACKLIST';
-		return apiStatus as ApiCheckStatus; // 'APPROVED' совпадает
+		return apiStatus as ApiCheckStatus;
 	};
 
 	const handleOverlayClick = (e: React.MouseEvent) => {
@@ -102,7 +110,6 @@ export const AddProductModal = ({ onClose }: Props) => {
 
 	return (
 		<div className={styles.overlay} onClick={handleOverlayClick}>
-
 			<div className={styles.modal}>
 				<div className={styles.header}>
 					<h2 className='text-xl font-bold'>Новая проверка</h2>

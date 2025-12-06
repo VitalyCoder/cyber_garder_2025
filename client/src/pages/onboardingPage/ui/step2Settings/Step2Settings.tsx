@@ -51,7 +51,7 @@ export const Step2Settings = ({ formData, onChange, onBack, onFinish }: Props) =
           ← Назад
         </button>
         <button onClick={onFinish} className={styles.finishButton}>
-          Завершить ✅
+          Далее →
         </button>
       </div>
     </div>

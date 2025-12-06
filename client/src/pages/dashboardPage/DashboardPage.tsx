@@ -6,7 +6,7 @@ import { AddProductModal } from '../addProductModal/AddProductModal';
 import { Profile } from './ui/profile';
 import { Wishlist } from './ui/wishlist';
 import { History } from './ui/history';
-import { Bot, User, X } from 'lucide-react'; 
+import { Bot, X } from 'lucide-react'; 
 import { ExpensesDonut } from '@/widgets/expenses/ui/expensesDonut/ExpensesDonut';
 
 type TabType = 'wishlist' | 'history' | 'profile';
@@ -135,10 +135,6 @@ export const DashboardPage = () => {
                     <span>ИИ-Чат</span>
                 </button>
                 <div className="w-12" />
-                <button className={styles.navItem} onClick={() => navigate('/profile')}>
-                    <User size={24} />
-                    <span>Список желаний</span>
-                </button>
             </div>
         </div>
     );

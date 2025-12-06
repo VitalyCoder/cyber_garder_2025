@@ -4,7 +4,6 @@ import { CoolingRangesPage } from '@/pages/coolingRangesPage/CoolingRangesPage';
 import { DashboardPage } from '@/pages/dashboardPage';
 import { EditProfilePage } from '@/pages/editProfilePage/EditProfilePage';
 import { OnboardingPage } from '@/pages/onboardingPage/OnboardingPage';
-import { ProfilePage } from '@/pages/profilePage';
 import { ResultPage } from '@/pages/resultPage';
 import { SurveyPage } from '@/pages/surveyPage/SurveyPage';
 import { UserSettingsPage } from '@/pages/userSettingsPage/UserSettingsPage';
@@ -32,10 +31,6 @@ function App() {
 				<Route
 					path='/result'
 					element={isLoggedIn ? <ResultPage /> : <Navigate to='/onboarding' />}
-				/>
-				<Route
-					path='/profile'
-					element={isLoggedIn ? <ProfilePage /> : <Navigate to='/onboarding' />}
 				/>
 				<Route
 					path='/settings/blacklist'
