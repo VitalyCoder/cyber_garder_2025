@@ -4,7 +4,6 @@ import { ResultPage } from '@/pages/resultPage';
 import { ProfilePage } from '@/pages/profilePage';
 import { ChatPage } from '@/pages/chatPage';
 import { useUserStore } from '@/store/userStore';
-import { MainPage } from '@/pages/mainPage/MainPage';
 import { OnboardingPage } from '@/pages/onboardingPage/OnboardingPage';
 
 function App() {
@@ -15,11 +14,7 @@ function App() {
       <Routes>
         <Route 
           path="/onboarding" 
-          element={isLoggedIn ? <Navigate to="/main" /> : <OnboardingPage />} 
-        />
-        <Route 
-          path="/main" 
-          element={isLoggedIn ? <MainPage /> : <Navigate to="/onboarding" />} 
+          element={isLoggedIn ? <Navigate to="/dashboard" /> : <OnboardingPage />} 
         />
         <Route 
           path="/dashboard" 
@@ -39,7 +34,7 @@ function App() {
         />
         <Route 
           path="/" 
-          element={<Navigate to={isLoggedIn ? "/main" : "/onboarding"} replace />} 
+          element={<Navigate to={isLoggedIn ? "/dashboard" : "/onboarding"} replace />} 
         />
       </Routes>
     </BrowserRouter>

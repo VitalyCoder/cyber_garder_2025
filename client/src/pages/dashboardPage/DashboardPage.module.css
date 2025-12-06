@@ -1,24 +1,60 @@
 .page {
-  @apply min-h-screen bg-white pb-24 relative overflow-hidden;
+  @apply min-h-screen bg-gray-50 relative pb-24; /* pb-24 чтобы контент не перекрывался кнопкой */
 }
+
 .header {
-  @apply px-6 pt-6 flex justify-between items-center;
+  @apply bg-white px-6 py-4 flex justify-between items-center sticky top-0 z-30 shadow-sm;
 }
-.monthSelector {
-  @apply px-4 py-2 bg-gray-100 rounded-full text-sm font-bold text-gray-700;
+
+.title {
+  @apply text-xl font-bold text-gray-900;
 }
+
+.logoutButton {
+  @apply text-sm text-red-500 font-medium hover:text-red-700 transition-colors;
+}
+
+.tabsContainer {
+  @apply px-4 py-4 sticky top-[60px] z-20 bg-gray-50/95 backdrop-blur-sm;
+}
+
+.tabsWrapper {
+  @apply flex bg-white p-1 rounded-xl shadow-sm border border-gray-100;
+}
+
+.tab {
+  @apply flex-1 py-2.5 text-sm font-semibold rounded-lg text-center transition-all duration-200;
+}
+
+.activeTab {
+  @apply bg-black text-white shadow-md;
+}
+
+.inactiveTab {
+  @apply text-gray-500 hover:bg-gray-50 hover:text-gray-900;
+}
+
+.content {
+  @apply px-4 mt-2; 
+}
+
 .fab {
   @apply fixed bottom-24 right-1/2 transform translate-x-1/2 w-16 h-16 bg-black text-white rounded-full shadow-2xl flex items-center justify-center text-4xl pb-2 transition-transform active:scale-95 z-50;
 }
+
 .bottomNav {
   @apply fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 py-4 px-8 flex justify-between items-center z-40 pb-8;
 }
+
 .navItem {
   @apply flex flex-col items-center gap-1 text-gray-400 text-xs font-medium hover:text-black transition-colors;
 }
-.modalOverlay {
-  @apply fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center backdrop-blur-sm animate-[fadeIn_0.2s_ease-out];
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-.modalContent {
-  @apply bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-6 shadow-2xl animate-[slideUp_0.3s_ease-out];
+
+.content {
+  animation: fadeIn 0.3s ease-out;
 }

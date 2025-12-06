@@ -1,61 +1,96 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, User, X } from 'lucide-react';
+import { useUserStore } from '@/store/userStore';
 import styles from './DashboardPage.module.css';
-import { checkProductApi } from '@/shared/api/checkService';
-import { useUserStore } from '@/entities/user/model/store';
+import { AddProductModal } from '../addProductModal/AddProductModal';
+import { Profile } from './ui/profile';
+import { Wishlist } from './ui/wishlist';
+import { History } from './ui/history'
+import { Bot, User } from 'lucide-react';
 import { ExpensesDonut } from '@/widgets/expenses/ui/expensesDonut/ExpensesDonut';
-import { CheckForm } from '@/features/check_impulse/ui/CheckForm';
+
+type TabType = 'wishlist' | 'history' | 'profile';
 
 export const DashboardPage = () => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
-    const profile = useUserStore((s) => s.profile);
 
-    const handleCheckSubmit = async (data: { name: string; price: string; category: string }) => {
-        setIsLoading(true);
+    const user = useUserStore((s) => s.user);
+    const logout = useUserStore((s) => s.logout);
 
-        const result = await checkProductApi(
-            data.name,
-            Number(data.price),
-            data.category,
-            profile
-        );
+    const [activeTab, setActiveTab] = useState<TabType>('wishlist');
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-        setIsLoading(false);
-        setIsModalOpen(false);
-
-        // Переходим на результат
-        navigate('/result', {
-            state: {
-                result,
-                product: { ...data, price: Number(data.price) }
-            }
-        });
+    const handleLogout = () => {
+        if (confirm('Ты уверен, что хочешь выйти?')) {
+            logout();
+            navigate('/onboarding');
+        }
     };
 
     return (
         <div className={styles.page}>
-            <div className={styles.header}>
-                <h1 className="text-2xl font-bold">ZenBalance</h1>
-                <button className={styles.monthSelector}>авг 2023 ▾</button>
-            </div>
-            
-            <ExpensesDonut />
+            <header className={styles.header}>
+                <div>
+                    <h1 className={styles.title}>ZenBalance</h1>
+                    {user && (
+                        <p className="text-xs text-gray-400">
+                            Привет, <span className="font-medium text-gray-600">{user.nickname}</span> 👋
+                        </p>
+                    )}
+                </div>
+                <button onClick={handleLogout} className={styles.logoutButton}>
+                    Выйти
+                </button>
+            </header>
 
-            <button
-                className={styles.fab}
-                onClick={() => setIsModalOpen(true)}
-            >
-                +
-            </button>
+                    <ExpensesDonut />
+            <div className={styles.tabsContainer}>
+                <div className={styles.tabsWrapper}>
+                    <button
+                        onClick={() => setActiveTab('wishlist')}
+                        className={`${styles.tab} ${activeTab === 'wishlist' ? styles.activeTab : styles.inactiveTab}`}
+                    >
+                        Желания
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('history')}
+                        className={`${styles.tab} ${activeTab === 'history' ? styles.activeTab : styles.inactiveTab}`}
+                    >
+                        История
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('profile')}
+                        className={`${styles.tab} ${activeTab === 'profile' ? styles.activeTab : styles.inactiveTab}`}
+                    >
+                        Профиль
+                    </button>
+                </div>
+            </div>
+
+            <main className={styles.content}>
+                {activeTab === 'wishlist' && <Wishlist />}
+                {activeTab === 'history' && <History />}
+                {activeTab === 'profile' && <Profile />}
+            </main>
+
+            {activeTab === 'wishlist' && (
+                <button
+                    onClick={() => setIsAddModalOpen(true)}
+                    className={styles.fab}
+                    aria-label="Добавить новую проверку"
+                >
+                    +
+                </button>
+            )}
+            {isAddModalOpen && (
+                <AddProductModal onClose={() => setIsAddModalOpen(false)} />
+            )}
 
             <div className={styles.bottomNav}>
                 <button
-                 className={styles.navItem}
-                 onClick={() => navigate('/chat')}
-                 >
+                    className={styles.navItem}
+                    onClick={() => navigate('/chat')}
+                >
                     <Bot size={24} />
                     <span>ИИ-Чат</span>
                 </button>
@@ -67,29 +102,6 @@ export const DashboardPage = () => {
                     <span>Профиль</span>
                 </button>
             </div>
-
-            {isModalOpen && (
-                <div className={styles.modalOverlay} onClick={(e) => {
-                    if (e.target === e.currentTarget) setIsModalOpen(false);
-                }}>
-                    <div className={styles.modalContent}>
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold">Новая покупка</h2>
-                            <button onClick={() => setIsModalOpen(false)} className="p-2 bg-gray-100 rounded-full">
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        {isLoading ? (
-                            <div className="py-10 text-center space-y-4">
-                                <div className="animate-spin text-4xl">🧠</div>
-                                <p className="text-gray-500 font-medium">ИИ анализирует твои финансы...</p>
-                            </div>
-                        ) : (
-                            <CheckForm onSubmit={handleCheckSubmit} />)}
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

@@ -1,0 +1,27 @@
+.container {
+  @apply space-y-3 pb-20;
+}
+
+.card {
+  @apply bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-2;
+}
+
+.cardHeader {
+  @apply flex justify-between items-start;
+}
+
+.category {
+  @apply text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded-md;
+}
+
+.price {
+  @apply font-bold text-lg text-gray-900;
+}
+
+.name {
+  @apply font-medium text-gray-800 text-base leading-tight;
+}
+
+.footer {
+  @apply flex justify-between items-center mt-2 border-t border-gray-50 pt-2;
+}
