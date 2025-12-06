@@ -27,7 +27,7 @@
 }
 
 .activeTab {
-  @apply bg-black text-white shadow-md;
+  @apply bg-yellow-500 text-black shadow-md;
 }
 
 .inactiveTab {
@@ -48,6 +48,31 @@
 
 .navItem {
   @apply flex flex-col items-center gap-1 text-gray-400 text-xs font-medium hover:text-black transition-colors;
+}
+.filterContainer {
+    @apply px-4 py-3 bg-white border-b border-gray-50 flex justify-center sticky top-[61px] z-20;
+}
+
+.dateInputsWrapper {
+    @apply flex items-center gap-2 bg-gray-50 p-1.5 rounded-xl border border-gray-100;
+}
+
+.inputGroup {
+    @apply flex items-center gap-1.5 px-2;
+}
+
+.inputLabel {
+    @apply text-xs font-bold text-gray-400 uppercase;
+}
+
+.dateInput {
+    @apply bg-transparent text-xs font-medium text-gray-700 outline-none cursor-pointer;
+    /* Убираем стандартные рамки браузера */
+    border: none; 
+}
+
+.resetBtn {
+    @apply w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-500 rounded-full hover:bg-gray-300 hover:text-black transition-colors ml-1;
 }
 
 @keyframes fadeIn {

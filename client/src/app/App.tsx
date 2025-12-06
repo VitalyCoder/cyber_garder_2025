@@ -2,6 +2,7 @@ import { BlacklistPage } from '@/pages/blacklistPage/BlacklistPage';
 import { ChatPage } from '@/pages/chatPage';
 import { CoolingRangesPage } from '@/pages/coolingRangesPage/CoolingRangesPage';
 import { DashboardPage } from '@/pages/dashboardPage';
+import { EditProfilePage } from '@/pages/editProfilePage/EditProfilePage';
 import { OnboardingPage } from '@/pages/onboardingPage/OnboardingPage';
 import { ProfilePage } from '@/pages/profilePage';
 import { ResultPage } from '@/pages/resultPage';
@@ -53,6 +54,10 @@ function App() {
 					element={
 						isLoggedIn ? <UserSettingsPage /> : <Navigate to='/onboarding' />
 					}
+				/>
+				<Route
+					path="/settings/profile"
+					element={isLoggedIn ? <EditProfilePage /> : <Navigate to="/onboarding" />}
 				/>
 				<Route
 					path='/chat'

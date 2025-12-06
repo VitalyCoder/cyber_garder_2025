@@ -15,6 +15,7 @@ interface UserStore {
   logout: () => void;
   updateUser: (data: Partial<CreateUserDto>) => Promise<void>;
   isLoggedIn: () => boolean;
+  setBlacklistLocal: (categories: string[]) => void;
 }
 
 const getInitialUser = (): UserState | null => {
@@ -24,6 +25,7 @@ const getInitialUser = (): UserState | null => {
   } catch {
     return null;
   }
+  // return null
 };
 
 export const useUserStore = create<UserStore>((set, get) => ({
@@ -123,5 +125,15 @@ export const useUserStore = create<UserStore>((set, get) => ({
   // === ПРОВЕРКА АВТОРИЗАЦИИ (Добавлено) ===
   isLoggedIn: () => {
     return get().user !== null;
+  },
+
+    // === Блэк лист ===
+  setBlacklistLocal: (categories: string[]) => {
+    const currentUser = get().user;
+    if (currentUser) {
+      const updatedUser = { ...currentUser, blacklistedCategories: categories };
+      set({ user: updatedUser });
+      localStorage.setItem('zen_user', JSON.stringify(updatedUser));
+    }
   },
 }));

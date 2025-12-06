@@ -1,0 +1,62 @@
+.container {
+    @apply max-w-lg mx-auto p-4 space-y-6 pb-20;
+}
+
+.header {
+    @apply text-center space-y-2 mb-6;
+}
+
+.title {
+    @apply text-2xl font-bold text-gray-900;
+}
+
+.subtitle {
+    @apply text-sm text-gray-500;
+}
+
+.card {
+    @apply bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-5;
+}
+
+.inputGroup {
+    @apply flex flex-col gap-1.5;
+}
+
+.label {
+    @apply text-xs font-bold text-gray-500 uppercase tracking-wide;
+}
+
+.input {
+    @apply w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none transition-all font-mono text-lg;
+    @apply focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent;
+}
+
+.checkboxRow {
+    @apply flex items-center gap-3 p-3 border border-gray-100 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors;
+}
+
+.checkbox {
+    @apply w-5 h-5 text-black rounded focus:ring-black accent-black;
+}
+
+.actions {
+    @apply flex flex-col gap-3 pt-2;
+}
+
+.saveBtn {
+    @apply w-full py-3.5 bg-black text-white rounded-xl font-bold shadow-lg transition-transform active:scale-95 hover:bg-gray-800;
+}
+
+.cancelBtn {
+    @apply w-full py-3.5 bg-gray-100 text-gray-600 rounded-xl font-bold transition-colors hover:bg-gray-200;
+}
+
+
+.topBar {
+  @apply flex items-center mb-2;
+}
+
+.backBtn {
+  @apply flex items-center gap-2 text-sm font-bold text-gray-500 transition-colors py-2 px-3 rounded-xl;
+  @apply hover:bg-gray-100 hover:text-black active:scale-95;
+}

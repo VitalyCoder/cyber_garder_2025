@@ -14,6 +14,7 @@ const DEFAULT_PROFILE: UserProfile = {
 interface UserState {
   profile: UserProfile; 
   setProfile: (profile: UserProfile) => void;
+
 }
 
 export const useUserStore = create<UserState>()(

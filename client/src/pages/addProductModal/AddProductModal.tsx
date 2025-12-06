@@ -102,6 +102,7 @@ export const AddProductModal = ({ onClose }: Props) => {
 
 	return (
 		<div className={styles.overlay} onClick={handleOverlayClick}>
+
 			<div className={styles.modal}>
 				<div className={styles.header}>
 					<h2 className='text-xl font-bold'>Новая проверка</h2>
