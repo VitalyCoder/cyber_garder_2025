@@ -8,8 +8,16 @@ import axios, { type AxiosInstance } from 'axios';
 // =========================
 // Предполагаем, что фронт и бэк работают с одним origin через прокси Vite.
 // При необходимости можно заменить baseURL на полный адрес API.
+// Use Vite env when in browser; fall back to /api in SSR/unknown
+const viteEnv =
+	(typeof import.meta !== 'undefined' &&
+		(import.meta as unknown as { env?: Record<string, string> }).env) ||
+	{};
+const baseURL =
+	typeof window === 'undefined' ? '/api' : viteEnv.VITE_API_BASE_URL ?? '/api';
+
 export const api: AxiosInstance = axios.create({
-	baseURL: '/api',
+	baseURL,
 });
 
 // Вы можете добавить перехватчики ниже, если нужны единые обработчики ошибок/авторизации
@@ -260,22 +268,32 @@ export const wishlistApi = {
 		);
 		return data;
 	},
-	updateStatus: async (id: UUID, payload: UpdateWishlistStatusDto) => {
+	updateStatus: async (
+		userId: UUID,
+		id: UUID,
+		payload: UpdateWishlistStatusDto
+	) => {
 		const { data } = await api.patch<OkResponse>(
-			`/users/:userId/wishlist/${id}/status`,
+			`/users/${userId}/wishlist/${id}/status`,
 			payload
 		);
 		return data;
 	},
-	addAIRecommendation: async (id: UUID, payload: AddAIRecommendationDto) => {
+	addAIRecommendation: async (
+		userId: UUID,
+		id: UUID,
+		payload: AddAIRecommendationDto
+	) => {
 		const { data } = await api.patch<OkResponse>(
-			`/users/:userId/wishlist/${id}/ai-recommendation`,
+			`/users/${userId}/wishlist/${id}/ai-recommendation`,
 			payload
 		);
 		return data;
 	},
 	remove: async (userId: UUID, id: UUID) => {
-		const { data } = await api.delete<OkResponse>(`/users/${userId}/wishlist/${id}`);
+		const { data } = await api.delete<OkResponse>(
+			`/users/${userId}/wishlist/${id}`
+		);
 		return data;
 	},
 };
