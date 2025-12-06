@@ -1,4 +1,5 @@
-import { DEFAULT_COOLING_RULES, type ProductStatus, type UserProfile } from "@/types";
+import type { UserProfile } from "@/entities/user/model/types";
+import { DEFAULT_COOLING_RULES, type ProductStatus } from "@/types";
 
 interface CheckResult {
   status: ProductStatus;

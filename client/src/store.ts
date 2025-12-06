@@ -1,7 +1,8 @@
 // src/store.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { UserProfile, WishlistItem,  } from './types';
+import type { WishlistItem,  } from './types';
+import type { UserProfile } from './entities/user/model/types';
 
 interface AppState {
   isOnboarded: boolean;

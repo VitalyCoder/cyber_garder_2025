@@ -1,7 +1,7 @@
 import { COOLING_RULES } from "@/shared/config/constants";
 import type { User, ApiCheckStatus } from "@/types"; // Импортируем ApiCheckStatus из ваших типов
 export interface CheckResult {
-  status: ApiCheckStatus; // Используем тип API
+  status: ApiCheckStatus; 
   daysToWait: number;
   unlockDate: string;
   aiAdvice: string;
@@ -19,7 +19,7 @@ export const calculateCoolingParams = (
       status: 'BLACKLIST',
       daysToWait: 0,
       unlockDate: today.toISOString(),
-      aiAdvice: `Категория "${category}" находится в твоем черном списке. Игры — твоя слабость. Сосредоточься на важном.`,
+      aiAdvice: `Категория "${category}" находится в твоем черном списке.`,
     };
   }
   let days = 1;
@@ -37,7 +37,7 @@ export const calculateCoolingParams = (
 
   const percent = Math.round((price / profile.monthlyIncome) * 100);
   return {
-    status: 'COOLDOWN', // Было 'COOLING', стало как в API
+    status: 'COOLDOWN', 
     daysToWait: days,
     unlockDate: unlockDate.toISOString(),
     aiAdvice: `Это ${percent}% твоего дохода. Подожди ${days} дн. За это время эмоции улягутся.`,

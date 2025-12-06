@@ -1,5 +1,5 @@
 import styles from './OnboardingPage.module.css';
-import { OnboardingFlow } from './ui/onboardingFloww/OnboardingFlow';
+import { OnboardingFlow } from './ui/onboardingFlow/OnboardingFlow';
 
 export const OnboardingPage = () => {
   return (

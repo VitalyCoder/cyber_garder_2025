@@ -160,6 +160,27 @@ export interface HistoryEntity {
 }
 
 // =========================
+// Типы: Products (AI-проверка)
+// =========================
+export type ProductCheckStatus = 'APPROVED' | 'COOLING' | 'BLOCKED';
+
+export interface CheckProductDto {
+	userId: UUID;
+	productName: string;
+	price: number;
+	category: string;
+}
+
+export interface CheckProductResponseDto {
+	status: ProductCheckStatus;
+	cooling_days?: number;
+	unlock_date?: string | null; // ISO
+	ai_reason?: string | null;
+	ai_advice?: string | null;
+	can_afford_now?: boolean;
+}
+
+// =========================
 // Типы: Notification Excluded Product
 // =========================
 export interface AddNotificationExcludedProductDto {
@@ -253,10 +274,8 @@ export const wishlistApi = {
 		);
 		return data;
 	},
-	remove: async (id: UUID) => {
-		const { data } = await api.delete<OkResponse>(
-			`/users/:userId/wishlist/${id}`
-		);
+	remove: async (userId: UUID, id: UUID) => {
+		const { data } = await api.delete<OkResponse>(`/users/${userId}/wishlist/${id}`);
 		return data;
 	},
 };
@@ -405,6 +424,19 @@ export const notificationExcludedProductApi = {
 		const { data } = await api.get<ExistsResponse>(
 			`/users/${userId}/notifications/excluded/exists`,
 			{ params: { productName } }
+		);
+		return data;
+	},
+};
+
+// =========================
+// PRODUCTS API (проверка желаемой покупки)
+// =========================
+export const productsApi = {
+	check: async (payload: CheckProductDto) => {
+		const { data } = await api.post<CheckProductResponseDto>(
+			`/products/check`,
+			payload
 		);
 		return data;
 	},

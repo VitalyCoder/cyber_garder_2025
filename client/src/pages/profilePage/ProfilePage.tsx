@@ -1,39 +1,16 @@
 import { useUserStore } from '@/entities/user/model/store';
 import { WishlistList } from '@/widgets/wishlist/ui/wishList';
-import { ArrowLeft, X } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './ProfilePage.module.css'
-import { CheckForm } from '@/features/check_impulse/ui/CheckForm';
-import { checkProductApi } from '@/shared/api/checkService';
+import { AddProductModal } from '../addProductModal/AddProductModal';
 
 export const ProfilePage = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
   const { profile } = useUserStore();
   const navigate = useNavigate();
 
-  const handleCheckSubmit = async (data: { name: string; price: string; category: string }) => {
-    setIsLoading(true);
-
-    const result = await checkProductApi(
-      data.name,
-      Number(data.price),
-      data.category,
-      profile
-    );
-
-    setIsLoading(false);
-    setIsModalOpen(false);
-
-    navigate('/result', {
-      state: {
-        result,
-        product: { ...data, price: Number(data.price) }
-      }
-    });
-  };
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-100 pb-24">
@@ -48,7 +25,6 @@ export const ProfilePage = () => {
               Накопления: {profile.currentSavings.toLocaleString()} ₽
             </p>
           </div>
-          {/* спросить будет ли кнопка редакта */}
         </div>
       </div>
 
@@ -59,32 +35,13 @@ export const ProfilePage = () => {
 
       <button
         className={styles.fab}
-        onClick={() => setIsModalOpen(true)}
+        onClick={() => setIsAddModalOpen(true)}
       >
         +
       </button>
 
-      {isModalOpen && (
-        <div className={styles.modalOverlay} onClick={(e) => {
-          if (e.target === e.currentTarget) setIsModalOpen(false);
-        }}>
-          <div className={styles.modalContent}>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Новая покупка</h2>
-              <button onClick={() => setIsModalOpen(false)} className="p-2 bg-gray-100 rounded-full">
-                <X size={20} />
-              </button>
-            </div>
-
-            {isLoading ? (
-              <div className="py-10 text-center space-y-4">
-                <div className="animate-spin text-4xl">🧠</div>
-                <p className="text-gray-500 font-medium">ИИ анализирует твои финансы...</p>
-              </div>
-            ) : (
-              <CheckForm onSubmit={handleCheckSubmit} />)}
-          </div>
-        </div>
+      {isAddModalOpen && (
+        <AddProductModal onClose={() => setIsAddModalOpen(false)} />
       )}
     </div>
   );

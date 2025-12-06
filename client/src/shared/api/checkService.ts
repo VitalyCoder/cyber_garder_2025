@@ -1,12 +1,12 @@
 import { type CheckResult, calculateCoolingParams } from '@/entities/product/lib/cooling-logic';
-import type { UserProfile } from '@/types';
+import type { User } from '@/types';
 import { api } from './api';
 
 export const checkProductApi = async (
   name: string,
   price: number,
   category: string,
-  profile: UserProfile
+  profile: User
 ): Promise<CheckResult> => {
   
   try {
