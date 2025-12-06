@@ -34,15 +34,23 @@ export const ChatWindow = () => {
 	}, [messages]);
 
 	useEffect(() => {
-		const s = io('/', { transports: ['websocket'] });
+		const viteEnv =
+			(typeof import.meta !== 'undefined' &&
+				(import.meta as unknown as { env?: Record<string, string> }).env) ||
+			{};
+		const wsBase = viteEnv.VITE_WS_BASE_URL || '/';
+		const s = io(wsBase, { transports: ['websocket'], path: '/socket.io' });
 		socketRef.current = s;
-		s.on('reply', (payload: { text: string }) => {
+		s.on('chat:reply', (payload: { text: string; is_refusal?: boolean }) => {
 			const aiMsg: Message = {
 				id: Date.now(),
 				text: payload.text,
 				sender: 'ai',
 			};
 			setMessages(prev => [...prev, aiMsg]);
+			setIsTyping(false);
+		});
+		s.on('chat:error', () => {
 			setIsTyping(false);
 		});
 		s.on('connect_error', () => {
@@ -60,7 +68,10 @@ export const ChatWindow = () => {
 		setMessages(prev => [...prev, userMsg]);
 		setInput('');
 		setIsTyping(true);
-		socketRef.current.emit('message', { text: userMsg.text, userId: user?.id });
+		socketRef.current.emit('chat:message', {
+			text: userMsg.text,
+			userId: user?.id,
+		});
 	};
 
 	return (
