@@ -1,0 +1,43 @@
+.container {
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 16px;
+}
+.row {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+.list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.tag {
+	background: #f1f5f9;
+	color: #0f172a;
+	padding: 6px 10px;
+	border-radius: 12px;
+	display: inline-flex;
+	gap: 6px;
+	align-items: center;
+}
+.btn {
+	padding: 8px 12px;
+	border-radius: 8px;
+	cursor: pointer;
+}
+.primary {
+	background: #2563eb;
+	color: white;
+}
+.danger {
+	background: #ef4444;
+	color: white;
+}
+.input {
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 8px 12px;
+	flex: 1;
+}

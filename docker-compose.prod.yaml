@@ -45,18 +45,18 @@ services:
     ports:
       - "4200:4200"
 
-  client:
-    build:
-      context: ./client
-      dockerfile: Dockerfile.prod
-    container_name: cybergarden_client
-    environment:
-      VITE_API_BASE_URL: http://localhost:4200/api
-      NODE_ENV: development
-    ports:
-      - "5173:80"
-    depends_on:
-      - server
+  # client:
+  #   build:
+  #     context: ./client
+  #     dockerfile: Dockerfile.prod
+  #   container_name: cybergarden_client
+  #   environment:
+  #     VITE_API_BASE_URL: http://localhost:4200/api
+  #     NODE_ENV: development
+  #   ports:
+  #     - "5173:80"
+  #   depends_on:
+  #     - server
 
   ai:
     build:

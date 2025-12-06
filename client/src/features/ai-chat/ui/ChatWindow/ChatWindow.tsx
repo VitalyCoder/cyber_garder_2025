@@ -1,102 +1,146 @@
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send } from 'lucide-react';
-import styles from './ChatWindow.module.css';
+import { useUserStore } from '@/store/userStore';
 import clsx from 'clsx';
+import { ArrowLeft, Send } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { io, Socket } from 'socket.io-client';
+import styles from './ChatWindow.module.css';
 
 interface Message {
-  id: number;
-  text: string;
-  sender: 'user' | 'ai';
+	id: number;
+	text: string;
+	sender: 'user' | 'ai';
 }
 
 export const ChatWindow = () => {
-  const navigate = useNavigate();
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  
-  const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: 'Привет! Я Мурад. Помогу тебе сэкономить. Что обсудим?', sender: 'ai' }
-  ]);
+	const navigate = useNavigate();
+	const messagesEndRef = useRef<HTMLDivElement>(null);
+	const user = useUserStore(s => s.user);
+	const socketRef = useRef<Socket | null>(null);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+	const [input, setInput] = useState('');
+	const [isTyping, setIsTyping] = useState(false);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+	const [messages, setMessages] = useState<Message[]>([
+		{
+			id: 1,
+			text: 'Привет! Я Мурад. Помогу тебе сэкономить. Что обсудим?',
+			sender: 'ai',
+		},
+	]);
 
-    const userMsg: Message = { id: Date.now(), text: input, sender: 'user' };
-    setMessages(prev => [...prev, userMsg]);
-    setInput('');
-    setIsTyping(true);
+	useEffect(() => {
+		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+	}, [messages]);
 
-    setTimeout(() => {
-      const aiResponses = [
-        // заглушки
-        "Это интересная мысль. Давай посчитаем, выгодно ли это?",
-        "Я вижу по графику, что ты тратишь много на фастфуд. Может, стоит приготовить дома?",
-        "Отличная цель! Если откладывать по 5000₽, накопишь через 3 месяца.",
-        "Я проанализировал твой профиль. Покупка выглядит рискованной."
-      ];
-      const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
-      
-      const aiMsg: Message = { id: Date.now() + 1, text: randomResponse, sender: 'ai' };
-      setMessages(prev => [...prev, aiMsg]);
-      setIsTyping(false);
-    }, 1500);
-  };
+	useEffect(() => {
+		const s = io('/', { transports: ['websocket'] });
+		socketRef.current = s;
+		s.on('reply', (payload: { text: string }) => {
+			const aiMsg: Message = {
+				id: Date.now(),
+				text: payload.text,
+				sender: 'ai',
+			};
+			setMessages(prev => [...prev, aiMsg]);
+			setIsTyping(false);
+		});
+		s.on('connect_error', () => {
+			setIsTyping(false);
+		});
+		return () => {
+			s.disconnect();
+		};
+	}, []);
 
-  return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <button onClick={() => navigate(-1)} className="p-1">
-          <ArrowLeft size={24} />
-        </button>
-        <div>
-          <h2 className="font-bold text-lg">Финансовый Ассистент</h2>
-          <div className="flex items-center gap-1">
-            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            <span className="text-xs text-gray-500">Online</span>
-          </div>
-        </div>
-      </div>
+	const handleSend = () => {
+		if (!input.trim() || !socketRef.current || isTyping) return;
 
-      <div className={styles.messagesArea}>
-        {messages.map((msg) => (
-          <div key={msg.id} className={clsx(styles.messageRow, msg.sender === 'user' ? styles.userRow : styles.aiRow)}>
-            <div className={clsx(styles.bubble, msg.sender === 'user' ? styles.userBubble : styles.aiBubble)}>
-              {msg.text}
-            </div>
-          </div>
-        ))}
-        
-        {isTyping && (
-          <div className={clsx(styles.messageRow, styles.aiRow)}>
-            <div className={clsx(styles.bubble, styles.aiBubble, "flex gap-1 items-center h-10")}>
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-            </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+		const userMsg: Message = { id: Date.now(), text: input, sender: 'user' };
+		setMessages(prev => [...prev, userMsg]);
+		setInput('');
+		setIsTyping(true);
+		socketRef.current.emit('message', { text: userMsg.text, userId: user?.id });
+	};
 
-      <div className={styles.inputArea}>
-        <input 
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-          placeholder="Спроси совета..."
-          className={styles.input}
-        />
-        <button onClick={handleSend} disabled={!input.trim()} className={styles.sendBtn}>
-          <Send size={20} />
-        </button>
-      </div>
-    </div>
-  );
+	return (
+		<div className={styles.container}>
+			<div className={styles.header}>
+				<button onClick={() => navigate(-1)} className='p-1'>
+					<ArrowLeft size={24} />
+				</button>
+				<div>
+					<h2 className='font-bold text-lg'>Финансовый Ассистент</h2>
+					<div className='flex items-center gap-1'>
+						<span className='w-2 h-2 bg-green-500 rounded-full animate-pulse'></span>
+						<span className='text-xs text-gray-500'>Online</span>
+					</div>
+				</div>
+			</div>
+
+			<div className={styles.messagesArea}>
+				{messages.map(msg => (
+					<div
+						key={msg.id}
+						className={clsx(
+							styles.messageRow,
+							msg.sender === 'user' ? styles.userRow : styles.aiRow
+						)}
+					>
+						<div
+							className={clsx(
+								styles.bubble,
+								msg.sender === 'user' ? styles.userBubble : styles.aiBubble
+							)}
+						>
+							{msg.text}
+						</div>
+					</div>
+				))}
+
+				{isTyping && (
+					<div className={clsx(styles.messageRow, styles.aiRow)}>
+						<div
+							className={clsx(
+								styles.bubble,
+								styles.aiBubble,
+								'flex gap-1 items-center h-10'
+							)}
+						>
+							<span
+								className='w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce'
+								style={{ animationDelay: '0ms' }}
+							></span>
+							<span
+								className='w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce'
+								style={{ animationDelay: '150ms' }}
+							></span>
+							<span
+								className='w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce'
+								style={{ animationDelay: '300ms' }}
+							></span>
+						</div>
+					</div>
+				)}
+				<div ref={messagesEndRef} />
+			</div>
+
+			<div className={styles.inputArea}>
+				<input
+					value={input}
+					onChange={e => setInput(e.target.value)}
+					onKeyDown={e => e.key === 'Enter' && handleSend()}
+					placeholder='Спроси совета...'
+					className={styles.input}
+				/>
+				<button
+					onClick={handleSend}
+					disabled={!input.trim() || isTyping}
+					className={styles.sendBtn}
+				>
+					<Send size={20} />
+				</button>
+			</div>
+		</div>
+	);
 };

@@ -1,0 +1,28 @@
+.container {
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 16px;
+}
+.row {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin-bottom: 12px;
+}
+.select {
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 8px 12px;
+}
+.btn {
+	padding: 8px 12px;
+	border-radius: 8px;
+	cursor: pointer;
+}
+.primary {
+	background: #2563eb;
+	color: white;
+}
+.muted {
+	color: #6b7280;
+}

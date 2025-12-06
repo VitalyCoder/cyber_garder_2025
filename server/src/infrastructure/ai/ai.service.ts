@@ -15,6 +15,10 @@ export interface PurchaseAdviceResult {
   advice?: string;
 }
 
+export interface ChatResult {
+  reply: string;
+}
+
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name);
@@ -74,5 +78,14 @@ export class AiService {
       '/ai/purchase-advice',
       params,
     )) as PurchaseAdviceResult;
+  }
+
+  async chat(message: string, userId?: string): Promise<string> {
+    if (!this.baseUrl) throw new Error('AI_SERVICE_URL is not configured');
+    const res = (await this.post('/ai/chat', {
+      message,
+      user_id: userId,
+    })) as ChatResult;
+    return res.reply ?? '';
   }
 }

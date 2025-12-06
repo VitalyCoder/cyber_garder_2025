@@ -1,0 +1,42 @@
+.container {
+	max-width: 720px;
+	margin: 0 auto;
+	padding: 16px;
+}
+.row {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+.input {
+	border: 1px solid #e5e7eb;
+	border-radius: 8px;
+	padding: 8px 12px;
+}
+.btn {
+	padding: 8px 12px;
+	border-radius: 8px;
+	cursor: pointer;
+}
+.primary {
+	background: #2563eb;
+	color: white;
+}
+.danger {
+	background: #ef4444;
+	color: white;
+}
+.list {
+	display: grid;
+	grid-template-columns: 1fr 100px 80px;
+	gap: 8px;
+	align-items: center;
+}
+.item {
+	background: #f8fafc;
+	padding: 8px 12px;
+	border-radius: 8px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
