@@ -3,10 +3,12 @@ import httpx
 from openai import AsyncOpenAI
 from config import settings
 
-# Увеличиваем таймаут клиента до 60 секунд
+# Клиент OpenAI с настраиваемыми таймаутом и числом ретраев
+# Важно держать таймаут меньше, чем timeout на Nest-сервисе (20s по умолчанию)
 client = AsyncOpenAI(
     api_key=settings.OPENAI_API_KEY,
-    http_client=httpx.AsyncClient(timeout=60.0)
+    http_client=httpx.AsyncClient(timeout=settings.OPENAI_TIMEOUT),
+    max_retries=settings.OPENAI_MAX_RETRIES,
 )
 
 async def ask_gpt_json(prompt: str, temperature: float = 0.7) -> dict:

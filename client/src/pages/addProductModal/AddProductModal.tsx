@@ -1,5 +1,10 @@
 import { useWishlistStore } from '@/entities/wishlist/model/store';
 import {
+	ProductInput,
+	type ProductData,
+} from '@/features/checkProduct/ui/productInput/ProductInput';
+import { ResultCard } from '@/features/checkProduct/ui/resultCard/ResultCard';
+import {
 	historyApi,
 	productsApi,
 	type CheckProductResponseDto,
@@ -9,8 +14,6 @@ import { useUserStore } from '@/store/userStore';
 import type { ApiCheckStatus } from '@/types';
 import { useState } from 'react';
 import styles from './AddProductModal.module.css';
-import { ResultCard } from '@/features/checkProduct/ui/resultCard/ResultCard';
-import { ProductInput, type ProductData } from '@/features/checkProduct/ui/productInput/ProductInput';
 
 interface Props {
 	onClose: () => void;
@@ -39,7 +42,7 @@ export const AddProductModal = ({ onClose }: Props) => {
 				productName: data.product_name,
 				price: data.price,
 				category: data.category,
-				productUrl: data.product_url
+				productUrl: data.product_url,
 			});
 
 			setResult(res);
@@ -57,7 +60,6 @@ export const AddProductModal = ({ onClose }: Props) => {
 					category: data.category!,
 				});
 			}
-
 		} catch (e) {
 			console.error(e);
 			alert('Не удалось связаться с ИИ или распознать ссылку.');
@@ -98,6 +100,26 @@ export const AddProductModal = ({ onClose }: Props) => {
 		}
 	};
 
+	const handleForceApprove = async () => {
+		if (!currentProduct || !user) return;
+		setIsLoading(true);
+		try {
+			const res = await productsApi.check({
+				userId: user.id,
+				productName: currentProduct.name,
+				price: currentProduct.price,
+				category: currentProduct.category,
+				force: true,
+			});
+			setResult(res);
+		} catch (e) {
+			console.error(e);
+			alert('Не удалось выполнить форс-одобрение.');
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	const mapStatusForUi = (apiStatus: string): ApiCheckStatus => {
 		if (apiStatus === 'COOLING') return 'COOLDOWN';
 		if (apiStatus === 'BLOCKED') return 'BLACKLIST';
@@ -134,6 +156,7 @@ export const AddProductModal = ({ onClose }: Props) => {
 							onReset={() => setResult(null)}
 							onSave={handleSave}
 							onBuy={handleBuyNow}
+							onForceApprove={handleForceApprove}
 						/>
 					)}
 				</div>

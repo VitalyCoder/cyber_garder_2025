@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { useWishlistStore } from '@/entities/wishlist/model/store';
-import { useUserStore } from '@/store/userStore';
-import styles from './Wishlist.module.css';
+import { useWishlistStore } from '@/entities/wishlist/model/store'
+import { useUserStore } from '@/store/userStore'
+import { useEffect } from 'react'
+import styles from './Wishlist.module.css'
 
 export const Wishlist = () => {
   const user = useUserStore((s) => s.user);
@@ -11,7 +11,7 @@ export const Wishlist = () => {
     if (user) {
       fetchItems(user.id);
     }
-  }, [user]);
+  }, [fetchItems, user]);
 
   const formatPrice = (price: number) => 
     new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', maximumFractionDigits: 0 }).format(price);

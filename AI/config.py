@@ -12,6 +12,11 @@ class Config:
 
     PORT = int(os.getenv("PORT", 5000))
 
+    # Таймауты/ретраи для OpenAI клиента (секунды)
+    OPENAI_TIMEOUT = float(os.getenv("OPENAI_TIMEOUT", 15.0))
+    # По умолчанию без повторов, чтобы уложиться в 20s таймаут Nest-сервиса
+    OPENAI_MAX_RETRIES = int(os.getenv("OPENAI_MAX_RETRIES", 0))
+
     JSON_MODE = os.getenv("JSON_MODE", "true").lower() == "true"
     MOCK_AI = os.getenv("MOCK_AI", "false").lower() == "true"
 

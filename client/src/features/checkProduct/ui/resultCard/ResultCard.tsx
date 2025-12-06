@@ -10,6 +10,7 @@ interface Props {
 	onReset: () => void;
 	onSave: () => void;
 	onBuy?: () => void;
+	onForceApprove?: () => void;
 }
 
 export const ResultCard = ({
@@ -18,6 +19,7 @@ export const ResultCard = ({
 	onReset,
 	onSave,
 	onBuy,
+	onForceApprove,
 }: Props) => {
 	const { status, daysToWait, aiAdvice, unlockDate } = result;
 
@@ -76,6 +78,15 @@ export const ResultCard = ({
 					>
 						В Wishlist
 					</Button>
+					{onForceApprove && (
+						<Button
+							variant='primary'
+							onClick={onForceApprove}
+							className='bg-green-600 hover:bg-green-700 text-white'
+						>
+							Одобрить форсом
+						</Button>
+					)}
 				</div>
 			</div>
 		);

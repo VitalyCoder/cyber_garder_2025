@@ -178,6 +178,7 @@ export interface CheckProductDto {
 	price?: number;
 	category?: string;
 	productUrl?: string;
+	force?: boolean;
 }
 
 export interface CheckProductResponseDto {

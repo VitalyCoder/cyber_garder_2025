@@ -21,6 +21,7 @@ from prompts import (
     get_financial_plan_prompt, get_perplexity_prompt
 )
 from ai_client import ask_gpt_json, ask_perplexity, client
+from openai import APIConnectionError, APITimeoutError, RateLimitError
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -128,6 +129,13 @@ async def chat_with_agent(request: ChatRequest):
         reply_text = response.choices[0].message.content
         is_refusal = "sorry" in reply_text.lower() or "извини" in reply_text.lower()
         return ChatResponse(reply=reply_text, is_refusal=is_refusal)
+    except (APIConnectionError, APITimeoutError) as e:
+        # Сетевые/таймаут ошибки: возвращаем 503, чтобы внешний сервис мог различать
+        logger.error(f"Chat Connection/Timeout Error: {e}")
+        raise HTTPException(status_code=503, detail="Chat Error: Upstream connection timeout")
+    except RateLimitError as e:
+        logger.error(f"Chat RateLimit Error: {e}")
+        raise HTTPException(status_code=429, detail="Chat Error: Rate limit exceeded")
     except Exception as e:
         logger.error(f"Chat Error: {e}")
         raise HTTPException(status_code=500, detail=f"Chat Error: {str(e)}")
