@@ -7,7 +7,6 @@ import styles from './ExpensesDonut.module.css';
 
 type Slice = { name: string; value: number; color: string };
 
-// Простая карта ключевых слов → категории
 const CATEGORY_MAP: Record<string, string> = {
 	burger: 'Фастфуд',
 	pizza: 'Фастфуд',
@@ -34,6 +33,11 @@ const COLORS: Record<string, string> = {
 	Остальное: '#94A3B8',
 };
 
+interface Props {
+  fromDate?: string; 
+  toDate?: string;
+}
+
 function detectCategory(name?: string | null): string {
 	const n = (name || '').toLowerCase();
 	for (const key of Object.keys(CATEGORY_MAP)) {
@@ -42,7 +46,7 @@ function detectCategory(name?: string | null): string {
 	return 'Остальное';
 }
 
-export const ExpensesDonut = () => {
+export const ExpensesDonut = ({ fromDate, toDate }: Props) => {
 	const user = useUserStore(s => s.user);
 	const [history, setHistory] = useState<HistoryEntity[]>([]);
 	const [loading, setLoading] = useState(false);
@@ -62,7 +66,6 @@ export const ExpensesDonut = () => {
 		};
 		load();
 
-		// Подписка на изменения истории (например, покупка из wishlist)
 		const unsubscribe = appEvents.on(HISTORY_UPDATED_EVENT, () => {
 			load();
 		});
@@ -70,29 +73,47 @@ export const ExpensesDonut = () => {
 	}, [user]);
 
 	const slices: Slice[] = useMemo(() => {
-		// Берём только покупки с ценой
-		const bought = history.filter(
-			h => h.action === 'bought' && (h.price ?? 0) > 0
-		);
+		const filtered = history.filter(h => {
+            if (h.action !== 'bought' || (h.price ?? 0) <= 0) return false;
+
+            const itemDate = new Date(h.createdAt); // Используем createdAt из API
+
+            if (fromDate) {
+                const start = new Date(fromDate);
+                start.setHours(0, 0, 0, 0); 
+                if (itemDate < start) return false;
+            }
+            
+            if (toDate) {
+               const end = new Date(toDate);
+               end.setHours(23, 59, 59, 999); // Конец дня
+               if (itemDate > end) return false;
+            }
+            
+            return true;
+        });
+
 		const totals = new Map<string, number>();
-		for (const item of bought) {
+		for (const item of filtered) {
 			const cat = detectCategory(item.productName);
 			const prev = totals.get(cat) || 0;
 			totals.set(cat, prev + (item.price || 0));
 		}
-		// Преобразуем в массив с цветами, сортируем по размеру
+
 		const arr: Slice[] = Array.from(totals.entries()).map(([name, value]) => ({
 			name,
 			value,
 			color: COLORS[name] || COLORS['Остальное'],
 		}));
+
 		arr.sort((a, b) => b.value - a.value);
-		// Если нет данных — покажем пустой "Остальное"
+
 		if (arr.length === 0) {
-			return [{ name: 'Остальное', value: 0, color: COLORS['Остальное'] }];
+			return [{ name: 'Нет трат', value: 0, color: COLORS['Остальное'] }];
 		}
+
 		return arr;
-	}, [history]);
+	}, [history, fromDate, toDate]); 
 
 	const total = useMemo(
 		() => slices.reduce((acc, s) => acc + s.value, 0),
@@ -101,7 +122,6 @@ export const ExpensesDonut = () => {
 
 	return (
 		<div className={styles.container}>
-			{/* График */}
 			<div className='w-64 h-64 relative'>
 				<ResponsiveContainer width='100%' height='100%'>
 					<PieChart>
@@ -121,32 +141,32 @@ export const ExpensesDonut = () => {
 					</PieChart>
 				</ResponsiveContainer>
 
-				{/* Текст по центру */}
 				<div className={styles.centerText}>
 					<div className={styles.totalAmount}>{total.toLocaleString()} ₽</div>
 					<div className={styles.label}>{loading ? 'Загрузка…' : 'Траты'}</div>
 				</div>
 			</div>
 
-			{/* Легенда снизу (Категории) */}
-			<div className={styles.legend}>
-				{slices.slice(0, 4).map(item => (
-					<div key={item.name} className={styles.legendItem}>
-						<div
-							className={styles.dot}
-							style={{ backgroundColor: item.color }}
-						/>
-						<div className='flex flex-col'>
-							<span className='text-xs font-bold text-gray-700'>
-								{item.name}
-							</span>
-							<span className='text-xs text-gray-500'>
-								{item.value.toLocaleString()} ₽
-							</span>
-						</div>
-					</div>
-				))}
-			</div>
+			{total > 0 && (
+                <div className={styles.legend}>
+                    {slices.slice(0, 4).map(item => (
+                        <div key={item.name} className={styles.legendItem}>
+                            <div
+                                className={styles.dot}
+                                style={{ backgroundColor: item.color }}
+                            />
+                            <div className='flex flex-col'>
+                                <span className='text-xs font-bold text-gray-700'>
+                                    {item.name}
+                                </span>
+                                <span className='text-xs text-gray-500'>
+                                    {item.value.toLocaleString()} ₽
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )}
 		</div>
 	);
 };

@@ -1,43 +1,110 @@
 .container {
-	max-width: 640px;
-	margin: 0 auto;
-	padding: 16px;
+  @apply max-w-2xl mx-auto p-4 space-y-6 pb-24;
 }
-.row {
-	display: flex;
-	gap: 8px;
-	margin-bottom: 12px;
+
+.header {
+  @apply text-center space-y-2 mb-4;
 }
-.list {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
+
+.title {
+  @apply text-2xl font-bold text-gray-900;
 }
-.tag {
-	background: #f1f5f9;
-	color: #0f172a;
-	padding: 6px 10px;
-	border-radius: 12px;
-	display: inline-flex;
-	gap: 6px;
-	align-items: center;
+
+.subtitle {
+  @apply text-sm text-gray-500 max-w-md mx-auto leading-relaxed;
 }
-.btn {
-	padding: 8px 12px;
-	border-radius: 8px;
-	cursor: pointer;
+
+.card {
+  @apply bg-white p-5 rounded-3xl shadow-xl border border-gray-100 space-y-5;
+  animation: slideUp 0.3s ease-out;
 }
-.primary {
-	background: #2563eb;
-	color: white;
+
+.inputRow {
+  @apply flex flex-col sm:flex-row gap-3;
 }
-.danger {
-	background: #ef4444;
-	color: white;
-}
+
 .input {
-	border: 1px solid #e5e7eb;
-	border-radius: 8px;
-	padding: 8px 12px;
-	flex: 1;
+  @apply w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl outline-none transition-all text-base font-medium text-gray-800 placeholder:text-gray-400;
+  @apply focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent focus:shadow-sm;
+}
+
+.addButton {
+  @apply sm:w-auto w-full px-8 py-4 sm:py-0 bg-black text-white rounded-2xl font-bold text-sm tracking-wide shadow-md transition-all;
+  @apply hover:bg-gray-800 hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
+  @apply flex items-center justify-center gap-2;
+}
+
+.suggestionsArea {
+  @apply space-y-3 pt-2 border-t border-gray-50;
+}
+
+.suggestionsTitle {
+  @apply text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1;
+}
+
+.suggestionsGrid {
+  @apply flex flex-wrap gap-2;
+}
+
+.suggestionChip {
+  @apply px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-gray-600 transition-all;
+  @apply hover:bg-black hover:text-white hover:border-black active:scale-90;
+}
+
+.listArea {
+  @apply space-y-4;
+}
+
+.listHeader {
+  @apply flex items-center justify-between px-2;
+}
+
+.listTitle {
+  @apply text-lg font-bold text-gray-900;
+}
+
+.countBadge {
+  @apply bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full font-bold border border-gray-200;
+}
+
+.tagsGrid {
+  @apply flex flex-wrap gap-2;
+}
+
+.tag {
+  @apply flex items-center gap-2 pl-3 pr-1 py-1.5 bg-white border border-red-100 text-red-600 rounded-xl text-sm font-medium shadow-sm transition-all;
+  @apply hover:border-red-200 hover:bg-red-50;
+}
+
+.deleteBtn {
+  @apply w-7 h-7 flex items-center justify-center rounded-lg text-red-400 transition-colors;
+  @apply hover:bg-red-100 hover:text-red-600 active:bg-red-200;
+}
+
+.loading {
+  @apply py-10 text-center text-gray-400 animate-pulse font-medium text-sm;
+}
+
+.emptyState {
+  @apply flex flex-col items-center justify-center py-12 bg-gray-50 rounded-3xl border border-dashed border-gray-200 text-gray-400 text-center px-4;
+}
+
+.error {
+  @apply bg-red-50 text-red-600 p-4 rounded-2xl text-sm font-medium text-center border border-red-100 mb-4;
+}
+
+
+.topBar {
+  @apply flex items-center mb-2;
+}
+
+.backBtn {
+  @apply flex items-center gap-2 text-sm font-bold text-gray-500 transition-colors py-2 px-3 rounded-xl;
+  @apply hover:bg-gray-100 hover:text-black active:scale-95;
+}
+
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

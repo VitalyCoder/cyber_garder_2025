@@ -1,143 +1,116 @@
 import { useUserStore } from '@/store/userStore';
-import { useState } from 'react';
+import { coolingRangeApi } from '@/shared/api/api'; // Импортируем API для подсчета правил (опционально)
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Profile.module.css';
 
 export const Profile = () => {
-	const user = useUserStore(s => s.user);
-	const navigate = useNavigate();
-	const updateUser = useUserStore(s => s.updateUser);
-	const [monthlyIncome, setMonthlyIncome] = useState<number>(
-		user?.monthlyIncome ?? 0
-	);
-	const [currentSavings, setCurrentSavings] = useState<number>(
-		user?.currentSavings ?? 0
-	);
-	const [monthlySavings, setMonthlySavings] = useState<number>(
-		user?.monthlySavings ?? 0
-	);
-	const [useSavingsCalculation, setUseSavingsCalculation] =
-		useState<boolean>(true);
+    const user = useUserStore(s => s.user);
+    const navigate = useNavigate();
+    
+    // Состояние для количества правил охлаждения (для красоты)
+    const [coolingCount, setCoolingCount] = useState<number | null>(null);
 
-	if (!user) return null;
+    // Подгружаем количество правил, чтобы показать в карточке
+    useEffect(() => {
+        if (user) {
+            coolingRangeApi.list(user.id)
+                .then(data => setCoolingCount(data.length))
+                .catch(() => setCoolingCount(0));
+        }
+    }, [user]);
 
-	return (
-		<div className={styles.container}>
-			<div className={styles.card}>
-				<h3 className={styles.cardTitle}>💰 Финансы</h3>
-				<div className={styles.row}>
-					<span className='text-gray-500'>Доход:</span>
-					<span className='font-mono font-medium'>
-						{(user.monthlyIncome ?? 0).toLocaleString()} ₽
-					</span>
-				</div>
-				<div className={styles.row}>
-					<span className='text-gray-500'>Накопления:</span>
-					<span className='font-mono font-medium'>
-						{(user.currentSavings ?? 0).toLocaleString()} ₽
-					</span>
-				</div>
-				<div className={styles.row}>
-					<span className='text-gray-500'>Цель в месяц:</span>
-					<span className='font-mono font-medium'>
-						{(user.monthlySavings ?? 0).toLocaleString()} ₽
-					</span>
-				</div>
-			</div>
+    if (!user) return null;
 
-			<div className={styles.card}>
-				<h3 className={styles.cardTitle}>⛔ Черный список</h3>
-				<div className='flex flex-wrap gap-2 mt-2'>
-					{(user.blacklistedCategories ?? []).length > 0 ? (
-						(user.blacklistedCategories ?? []).map(cat => (
-							<span key={cat} className={styles.tag}>
-								{cat}
-							</span>
-						))
-					) : (
-						<span className='text-sm text-gray-400'>Список пуст</span>
-					)}
-				</div>
-			</div>
+    return (
+        <div className={styles.container}>
+            <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                    <h3 className={styles.cardTitle}>💰 Финансы</h3>
+                    <button 
+                        className={styles.smallEditBtn}
+                        style={{marginBottom: '18px'}}
+                        onClick={() => navigate('/settings/profile')}
+                    >
+                        Изменить
+                    </button>
+                </div>
+                <div className={styles.row}>
+                    <span className='text-gray-500'>Доход:</span>
+                    <span className='font-mono font-medium text-lg'>
+                        {(user.monthlyIncome ?? 0).toLocaleString()} ₽
+                    </span>
+                </div>
+                <div className={styles.row}>
+                    <span className='text-gray-500'>Накопления:</span>
+                    <span className='font-mono font-medium text-lg'>
+                        {(user.currentSavings ?? 0).toLocaleString()} ₽
+                    </span>
+                </div>
+                <div className={styles.row}>
+                    <span className='text-gray-500'>Цель в месяц:</span>
+                    <span className='font-mono font-medium text-lg'>
+                        {(user.monthlySavings ?? 0).toLocaleString()} ₽
+                    </span>
+                </div>
+            </div>
 
-			<div className={styles.card}>
-				<h3 className={styles.cardTitle}>✏️ Редактировать профиль</h3>
-				<div className={styles.row}>
-					<span className='text-gray-500'>Доход:</span>
-					<input
-						type='number'
-						className='border px-2 py-1 rounded'
-						value={monthlyIncome}
-						onChange={e => setMonthlyIncome(Number(e.target.value))}
-					/>
-				</div>
-				<div className={styles.row}>
-					<span className='text-gray-500'>Накопления:</span>
-					<input
-						type='number'
-						className='border px-2 py-1 rounded'
-						value={currentSavings}
-						onChange={e => setCurrentSavings(Number(e.target.value))}
-					/>
-				</div>
-				<div className={styles.row}>
-					<span className='text-gray-500'>Регулярные накопления/мес:</span>
-					<input
-						type='number'
-						className='border px-2 py-1 rounded'
-						value={monthlySavings}
-						onChange={e => setMonthlySavings(Number(e.target.value))}
-					/>
-				</div>
-				<div className={styles.row}>
-					<label className='flex items-center gap-2'>
-						<input
-							type='checkbox'
-							checked={useSavingsCalculation}
-							onChange={e => setUseSavingsCalculation(e.target.checked)}
-						/>
-						Учитывать накопления при расчете
-					</label>
-				</div>
-				<button
-					className={styles.editButton}
-					onClick={async () => {
-						if (!user) return;
-						await updateUser({
-							monthlyIncome,
-							currentSavings,
-							monthlySavings,
-							useSavingsCalculation,
-						});
-						alert('Профиль сохранен');
-					}}
-				>
-					Сохранить изменения
-				</button>
-			</div>
+            <div className={styles.card} >
+                <div className={styles.cardHeader}>
+                    <h3 className={styles.cardTitle} style={{fontSize: '17px'}}>⛔ Черный список</h3>
+                    <button 
+                        className={styles.smallEditBtn}
+                        style={{marginBottom: '18px'}}
+                        onClick={() => navigate('/settings/blacklist')}
+                    >
+                        Изменить
+                    </button>
+                </div>
+                <div className='flex flex-wrap gap-2 mt-2'>
+                    {(user.blacklistedCategories ?? []).length > 0 ? (
+                        (user.blacklistedCategories ?? []).map(cat => (
+                            <span key={cat} className={styles.tag}>
+                                {cat}
+                            </span>
+                        ))
+                    ) : (
+                        <span className='text-sm text-gray-400'>Список пуст</span>
+                    )}
+                </div>
+            </div>
 
-			<button className={styles.editButton}>✏️ Редактировать профиль</button>
+            <div className={styles.card}>
+                <div className={styles.cardHeader}>
+                    <h3 className={styles.cardTitle} style={{marginBottom: '-5px'}}>❄️ Охлаждение</h3>
+                    <button 
+                        className={styles.smallEditBtn}
+                        onClick={() => navigate('/settings/cooling-ranges')}
+                    >
+                        Изменить
+                    </button>
+                </div>
+                <div className="text-sm text-gray-600">
+                    {coolingCount !== null ? (
+                        <>Активных правил: <span className="font-bold">{coolingCount}</span></>
+                    ) : (
+                        "Загрузка..."
+                    )}
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                    Настройка периодов ожидания для разных сумм.
+                </p>
+            </div>
 
-			<div className='mt-4 grid grid-cols-1 gap-2'>
-				<button
-					className={styles.editButton}
-					onClick={() => navigate('/settings/blacklist')}
-				>
-					⚠️ Черный список
-				</button>
-				<button
-					className={styles.editButton}
-					onClick={() => navigate('/settings/cooling-ranges')}
-				>
-					❄️ Правила охлаждения
-				</button>
-				<button
-					className={styles.editButton}
-					onClick={() => navigate('/settings/notifications')}
-				>
-					🔔 Уведомления
-				</button>
-			</div>
-		</div>
-	);
+            {/* 
+            <div className='mt-4'>
+                <button
+                    className={styles.navButton}
+                    onClick={() => navigate('/settings/notifications')}
+                >
+                    🔔 Настройки уведомлений
+                </button>
+            </div> 
+            */}
+        </div>
+    );
 };

@@ -2,8 +2,8 @@ import { BlacklistPage } from '@/pages/blacklistPage/BlacklistPage';
 import { ChatPage } from '@/pages/chatPage';
 import { CoolingRangesPage } from '@/pages/coolingRangesPage/CoolingRangesPage';
 import { DashboardPage } from '@/pages/dashboardPage';
+import { EditProfilePage } from '@/pages/editProfilePage/EditProfilePage';
 import { OnboardingPage } from '@/pages/onboardingPage/OnboardingPage';
-import { ProfilePage } from '@/pages/profilePage';
 import { ResultPage } from '@/pages/resultPage';
 import { SurveyPage } from '@/pages/surveyPage/SurveyPage';
 import { UserSettingsPage } from '@/pages/userSettingsPage/UserSettingsPage';
@@ -33,10 +33,6 @@ function App() {
 					element={isLoggedIn ? <ResultPage /> : <Navigate to='/onboarding' />}
 				/>
 				<Route
-					path='/profile'
-					element={isLoggedIn ? <ProfilePage /> : <Navigate to='/onboarding' />}
-				/>
-				<Route
 					path='/settings/blacklist'
 					element={
 						isLoggedIn ? <BlacklistPage /> : <Navigate to='/onboarding' />
@@ -53,6 +49,10 @@ function App() {
 					element={
 						isLoggedIn ? <UserSettingsPage /> : <Navigate to='/onboarding' />
 					}
+				/>
+				<Route
+					path="/settings/profile"
+					element={isLoggedIn ? <EditProfilePage /> : <Navigate to="/onboarding" />}
 				/>
 				<Route
 					path='/chat'

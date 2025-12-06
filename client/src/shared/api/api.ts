@@ -174,9 +174,10 @@ export type ProductCheckStatus = 'APPROVED' | 'COOLING' | 'BLOCKED';
 
 export interface CheckProductDto {
 	userId: UUID;
-	productName: string;
-	price: number;
-	category: string;
+	productName?: string;
+	price?: number;
+	category?: string;
+	productUrl?: string;
 }
 
 export interface CheckProductResponseDto {
@@ -186,6 +187,9 @@ export interface CheckProductResponseDto {
 	ai_reason?: string | null;
 	ai_advice?: string | null;
 	can_afford_now?: boolean;
+	detected_name?: string;
+	detected_price?: number;
+	detected_category?: string;
 }
 
 // =========================

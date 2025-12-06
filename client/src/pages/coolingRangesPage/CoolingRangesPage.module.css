@@ -1,42 +1,104 @@
 .container {
-	max-width: 720px;
-	margin: 0 auto;
-	padding: 16px;
+  @apply max-w-2xl mx-auto p-4 space-y-8 pb-20;
 }
-.row {
-	display: flex;
-	gap: 8px;
-	margin-bottom: 12px;
+
+/* --- Заголовок --- */
+.header {
+  @apply text-center space-y-2;
 }
+
+.title {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.subtitle {
+  @apply text-sm text-gray-500 max-w-md mx-auto;
+}
+
+/* --- Форма добавления --- */
+.formCard {
+  @apply bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4;
+}
+
+.formTitle {
+  @apply text-sm font-bold text-gray-900 mb-2 uppercase tracking-wide;
+}
+
+.inputsGrid {
+  @apply grid grid-cols-1 sm:grid-cols-3 gap-3;
+}
+
+.inputGroup {
+  @apply relative;
+}
+
 .input {
-	border: 1px solid #e5e7eb;
-	border-radius: 8px;
-	padding: 8px 12px;
+  @apply w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none transition-all font-mono text-sm;
+  @apply focus:bg-white focus:ring-2 focus:ring-black focus:border-transparent;
 }
-.btn {
-	padding: 8px 12px;
-	border-radius: 8px;
-	cursor: pointer;
+
+.label {
+  @apply absolute -top-2 left-3 bg-white px-1 text-[10px] font-bold text-gray-400 uppercase;
 }
-.primary {
-	background: #2563eb;
-	color: white;
+
+.addButton {
+  @apply w-full sm:col-span-3 py-3 bg-black text-white rounded-xl font-bold shadow-lg transition-transform active:scale-95 hover:bg-gray-800;
+  @apply disabled:opacity-50 disabled:cursor-not-allowed;
 }
-.danger {
-	background: #ef4444;
-	color: white;
-}
+
+/* --- Список правил --- */
 .list {
-	display: grid;
-	grid-template-columns: 1fr 100px 80px;
-	gap: 8px;
-	align-items: center;
+  @apply space-y-3;
 }
+
+.listHeader {
+  @apply text-sm font-bold text-gray-400 uppercase tracking-wide ml-1;
+}
+
 .item {
-	background: #f8fafc;
-	padding: 8px 12px;
-	border-radius: 8px;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
+  @apply flex justify-between items-center p-4 bg-white rounded-xl border border-gray-100 shadow-sm transition-all;
+  @apply hover:shadow-md hover:border-gray-300;
+}
+
+.rangeInfo {
+  @apply flex flex-col;
+}
+
+.rangeText {
+  @apply font-bold text-gray-900 text-lg font-mono;
+}
+
+.rangeArrow {
+  @apply text-gray-400 mx-1;
+}
+
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-1 w-max;
+}
+
+.deleteButton {
+  @apply w-10 h-10 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all;
+}
+
+/* --- Состояния --- */
+.loading {
+  @apply py-10 text-center text-gray-400 animate-pulse;
+}
+
+.emptyState {
+  @apply text-center py-12 text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200;
+}
+
+.error {
+  @apply bg-red-50 text-red-600 p-3 rounded-xl text-sm text-center border border-red-100;
+}
+
+
+.topBar {
+  @apply flex items-center mb-2;
+}
+
+.backBtn {
+  @apply flex items-center gap-2 text-sm font-bold text-gray-500 transition-colors py-2 px-3 rounded-xl;
+  @apply hover:bg-gray-100 hover:text-black active:scale-95;
 }

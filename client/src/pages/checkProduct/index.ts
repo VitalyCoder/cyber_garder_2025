@@ -1,1 +1,0 @@
-export {CheckProductPage} from './CheckProducts'
