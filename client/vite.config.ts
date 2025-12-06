@@ -7,7 +7,7 @@ export default defineConfig({
 	server: {
 		proxy: {
 			'/api': {
-				target: 'http://localhost:4200', // порт виталика
+				target: 'http://95.174.104.37:4200', // порт виталика
 				changeOrigin: true,
 				secure: false,
 			},
