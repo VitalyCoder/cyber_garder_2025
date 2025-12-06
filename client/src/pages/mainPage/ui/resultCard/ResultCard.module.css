@@ -1,0 +1,49 @@
+.card {
+  @apply p-6 rounded-2xl border text-center  duration-300;
+}
+
+.blocked {
+  @apply bg-red-50 border-red-100;
+}
+.cooling {
+  @apply bg-blue-50 border-blue-100;
+}
+.approved {
+  @apply bg-green-50 border-green-100;
+}
+
+.icon {
+  @apply text-6xl mb-4 block;
+}
+
+.title {
+  @apply text-xl font-bold mb-2 uppercase;
+}
+.titleBlocked { @apply text-red-600; }
+.titleCooling { @apply text-blue-600; }
+.titleApproved { @apply text-green-600; }
+
+.description {
+  @apply text-gray-600 mb-6;
+}
+
+.adviceBox {
+  @apply bg-white p-4 rounded-xl mb-6 text-left relative overflow-hidden shadow-sm;
+}
+.adviceLabel {
+  @apply text-xs font-bold uppercase mb-1;
+}
+.adviceText {
+  @apply text-gray-800 italic;
+}
+
+/* Кнопки */
+.actions {
+  @apply flex gap-3;
+}
+.actionsVertical {
+  @apply flex flex-col gap-3;
+}
+.linkButton {
+  @apply text-sm text-gray-500 hover:text-black underline bg-transparent p-0 w-auto mx-auto;
+}

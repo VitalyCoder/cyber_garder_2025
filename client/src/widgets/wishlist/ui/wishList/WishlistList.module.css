@@ -1,0 +1,27 @@
+.empty {
+  @apply text-center text-gray-400 py-10;
+}
+.list {
+  @apply space-y-4;
+}
+.card {
+  @apply bg-white p-4 rounded-xl shadow-sm border border-gray-100 transition-all;
+}
+.header {
+  @apply flex justify-between items-start mb-2;
+}
+.title {
+  @apply font-bold text-lg leading-tight;
+}
+.price {
+  @apply text-gray-500 text-sm;
+}
+.badge {
+  @apply px-2 py-1 rounded text-xs font-bold uppercase;
+}
+.advice {
+  @apply text-xs text-gray-500 mb-4 bg-gray-50 p-2 rounded italic mt-2;
+}
+.actions {
+  @apply flex gap-2;
+}
