@@ -50,6 +50,8 @@ export class ChatGateway {
         context: payload.context,
         history: payload.history,
       });
+      console.log(reply);
+
       // Отправляем ответ ТОЛЬКО инициатору вопроса
       client.emit('chat:reply', {
         text: reply ?? '...',
