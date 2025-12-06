@@ -1,31 +1,20 @@
-# Build stage
-FROM node:20-alpine AS build
+FROM node:20-alpine
 WORKDIR /app
 
 # Tools for building native modules (e.g., bcrypt)
 RUN apk add --no-cache python3 make g++
 
-# Install all deps (including dev) for building
+# Install all deps (dev included for start:dev)
 COPY package.json package-lock.json* ./
 RUN npm ci
 
 # Copy sources
 COPY . .
 
-# Build NestJS
-RUN npm run build
+ENV NODE_ENV=development
 
-# Runtime stage
-FROM node:20-alpine AS runtime
-WORKDIR /app
-
-ENV NODE_ENV=production
-
-## Copy app and deps from build (avoid reinstall)
-COPY --from=build /app/package.json ./package.json
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/dist ./dist
 # Expose API port
 EXPOSE 4200
 
-CMD ["node", "dist/main.js"]
+# Run Nest in watch mode
+CMD ["npm", "run", "start:dev"]
