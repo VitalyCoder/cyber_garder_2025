@@ -129,8 +129,10 @@ export class AiService {
     const res = (await this.post('/ai/chat', {
       message,
       user_id: options?.userId,
-      context: options?.context,
-      history: options?.history,
+      // API требует обязательное поле context — передаём хотя бы пустой объект
+      context: options?.context ?? {},
+      // И история — хотя бы пустой массив
+      history: options?.history ?? [],
     })) as ChatResult;
     return res;
   }

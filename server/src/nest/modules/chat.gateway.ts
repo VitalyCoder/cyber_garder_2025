@@ -54,7 +54,7 @@ export class ChatGateway {
 
       // Отправляем ответ ТОЛЬКО инициатору вопроса
       client.emit('chat:reply', {
-        text: reply ?? '...',
+        text: reply?.reply ?? '...',
         is_refusal: false,
       });
     } catch (e) {
