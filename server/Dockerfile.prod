@@ -2,7 +2,9 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-# Install deps
+# Tools for building native modules (e.g., bcrypt)
+RUN apk add --no-cache python3 make g++
+
 # Install all deps (including dev) for building
 COPY package.json package-lock.json* ./
 RUN npm ci
@@ -19,14 +21,11 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Copy built app
-# Install only production deps
-COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev || npm ci --only=production
-
-# Copy built app
+## Copy app and deps from build (avoid reinstall)
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 # Expose API port
 EXPOSE 4200
 
-CMD ["node", "dist/src/main.js"]
+CMD ["node", "dist/main.js"]
