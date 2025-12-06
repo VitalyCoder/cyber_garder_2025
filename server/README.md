@@ -330,6 +330,7 @@ docker compose up -d
 # Например, локально на порту 5000:
 export AI_SERVICE_URL=http://localhost:5000
 # См. подробности контрактов и схем в AI_INTEGRATION.md
+# Формальный контракт сервер ↔ AI: см. ../AI/CONTRACT.md
 ```
 
 ## Примечания и оговорки
