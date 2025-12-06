@@ -2,16 +2,17 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Tools for building native modules (e.g., bcrypt)
-RUN apk add --no-cache python3 make g++
+RUN apk add --no-cache python3 make g++ openssl
 
 # Install all deps (dev included for start:dev)
 COPY package.json package-lock.json* ./
 RUN npm ci
 
-RUN npx prisma generate
-
 # Copy sources
 COPY . .
+
+# Generate Prisma client after schema is available
+RUN npx prisma generate || true
 
 ENV NODE_ENV=development
 
