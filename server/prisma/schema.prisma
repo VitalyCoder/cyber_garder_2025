@@ -47,6 +47,7 @@ model User {
   blacklistCategories  BlacklistCategory[]
   coolingRanges        CoolingRange[]
   notificationExcluded NotificationExcludedProduct[]
+  telegramLink         TelegramLink?
 }
 
 model UserSettings {
@@ -115,4 +116,11 @@ model NotificationExcludedProduct {
   createdAt   DateTime  @default(now())
 
   @@index([userId, productName])
+}
+
+model TelegramLink {
+  userId   String   @id
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chatId   String
+  linkedAt DateTime @default(now())
 }
